@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ace-tool__enhance_prompt",
+      "Bash(curl:*)",
+      "mcp__ace-tool__search_context",
+      "Bash(npx create-next-app@latest api-key-dashboard --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --eslint)",
+      "Bash(pnpm init)",
+      "Bash(pnpm add date-fns zod @radix-ui/react-dialog @radix-ui/react-label @radix-ui/react-slot)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm build)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
