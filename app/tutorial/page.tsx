@@ -1,121 +1,150 @@
-'use client'
-
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { KeyRound, BarChart3, Settings, HelpCircle } from 'lucide-react'
-import Link from 'next/link'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 export default function TutorialPage() {
-  const steps = [
-    {
-      icon: KeyRound,
-      title: '1. 添加 API Key',
-      description: '在 Keys 页面点击"添加 Key"按钮，输入您的 API Key 和自定义名称。',
-      tips: ['支持添加多个 Key', 'Key 会安全存储在本地浏览器', '可以随时删除或编辑']
-    },
-    {
-      icon: BarChart3,
-      title: '2. 查看数据统计',
-      description: '在 Dashboard 页面查看所有 Key 的使用情况、余额和调用统计。',
-      tips: ['实时更新数据', '支持多维度图表展示', '可以查看历史趋势']
-    },
-    {
-      icon: Settings,
-      title: '3. 管理和监控',
-      description: '监控每个 Key 的限额使用情况，及时了解余额和调用次数。',
-      tips: ['限额接近时会有警告提示', '支持查看详细的 Token 消耗', '可以导出数据报表']
-    }
-  ]
-
-  const faqs = [
-    {
-      question: 'API Key 存储在哪里？',
-      answer: 'API Key 安全存储在您的浏览器本地存储中，不会上传到任何服务器。'
-    },
-    {
-      question: '如何获取 API Key？',
-      answer: '请联系管理员获取您的专属 API Key。'
-    },
-    {
-      question: '数据多久更新一次？',
-      answer: '数据每 5 分钟自动刷新一次，您也可以手动点击刷新按钮。'
-    },
-    {
-      question: '支持哪些模型？',
-      answer: '支持所有 New API 中转的模型，包括 GPT-4、GPT-3.5、Claude 等。'
-    }
-  ]
-
   return (
-    <div className="container mx-auto p-6 max-w-4xl space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">使用教程</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          快速上手 API Key Dashboard
-        </p>
+    <div className="container max-w-6xl py-6 lg:py-10">
+      <div className="flex flex-col items-start gap-4 md:flex-row md:justify-between md:gap-8">
+        <div className="flex-1 space-y-4">
+          <h1 className="inline-block font-heading text-4xl tracking-tight lg:text-5xl">
+            Documentation
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Complete guide to integrating and using the V-AI API.
+          </p>
+        </div>
       </div>
-
-      {/* 步骤指南 */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">快速开始</h2>
-        <div className="grid gap-6">
-          {steps.map((step, index) => (
-            <Card key={index} className="p-6">
-              <div className="flex gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                    <step.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </div>
-                <div className="flex-1 space-y-2">
-                  <h3 className="text-xl font-semibold">{step.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {step.description}
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-500 dark:text-gray-500">
-                    {step.tips.map((tip, i) => (
-                      <li key={i}>{tip}</li>
-                    ))}
-                  </ul>
+      <Separator className="my-6" />
+      <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6 lg:gap-10">
+        <aside className="hidden md:block">
+          <ScrollArea className="h-full py-6 pr-6 lg:py-8">
+            <div className="w-full space-y-6">
+              <div className="space-y-2">
+                <h4 className="font-medium">Getting Started</h4>
+                <div className="grid grid-flow-row auto-rows-max text-sm text-muted-foreground">
+                  <a className="group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline text-foreground font-medium" href="#introduction">Introduction</a>
+                  <a className="group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline" href="#authentication">Authentication</a>
+                  <a className="group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline" href="#quick-start">Quick Start</a>
                 </div>
               </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* 常见问题 */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-semibold flex items-center gap-2">
-          <HelpCircle className="w-6 h-6" />
-          常见问题
-        </h2>
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <Card key={index} className="p-6">
-              <h3 className="font-semibold mb-2">{faq.question}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{faq.answer}</p>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* 快捷操作 */}
-      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-semibold mb-2">准备好开始了吗？</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              立即添加您的第一个 API Key
+              <div className="space-y-2">
+                <h4 className="font-medium">API Reference</h4>
+                <div className="grid grid-flow-row auto-rows-max text-sm text-muted-foreground">
+                  <a className="group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline" href="#chat-completions">Chat Completions</a>
+                  <a className="group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline" href="#models">Models</a>
+                  <a className="group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline" href="#images">Images</a>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </aside>
+        <main className="space-y-8">
+          <section id="introduction" className="space-y-4">
+            <h2 className="scroll-m-20 text-3xl font-bold tracking-tight">Introduction</h2>
+            <p className="leading-7 [&:not(:first-child)]:mt-6">
+              V-AI provides a unified interface for accessing state-of-the-art AI models. 
+              Our API is fully compatible with the OpenAI API standard, allowing you to use existing client libraries 
+              and tools with minimal configuration changes.
             </p>
-          </div>
-          <Link href="/keys">
-            <Button size="lg">
-              前往 Keys 页面
-            </Button>
-          </Link>
-        </div>
-      </Card>
+          </section>
+
+          <section id="authentication" className="space-y-4">
+            <h2 className="scroll-m-20 text-3xl font-bold tracking-tight">Authentication</h2>
+            <p className="leading-7">
+              All API requests require an API key. You can generate and manage your API keys in the 
+              <a href="/keys" className="font-medium text-primary hover:underline mx-1">Keys</a> 
+              section of this dashboard.
+            </p>
+            <Card>
+              <CardHeader>
+                <CardTitle>Authorization Header</CardTitle>
+                <CardDescription>Include this header in all your requests.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
+                  Authorization: Bearer sk-your-api-key
+                </code>
+              </CardContent>
+            </Card>
+          </section>
+
+          <section id="quick-start" className="space-y-4">
+            <h2 className="scroll-m-20 text-3xl font-bold tracking-tight">Quick Start</h2>
+            <Tabs defaultValue="curl" className="w-full">
+              <TabsList>
+                <TabsTrigger value="curl">cURL</TabsTrigger>
+                <TabsTrigger value="python">Python</TabsTrigger>
+                <TabsTrigger value="js">Node.js</TabsTrigger>
+              </TabsList>
+              <TabsContent value="curl" className="mt-4">
+                <Card>
+                  <CardContent className="pt-4">
+                    <pre className="overflow-x-auto rounded-lg bg-black p-4">
+                      <code className="text-sm text-white">
+{`curl https://api-cli.proxy.vesper36.cc/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $OPENAI_API_KEY" \\
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'`}
+                      </code>
+                    </pre>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="python" className="mt-4">
+                 <Card>
+                  <CardContent className="pt-4">
+                    <pre className="overflow-x-auto rounded-lg bg-black p-4">
+                      <code className="text-sm text-white">
+{`from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://api-cli.proxy.vesper36.cc/v1"
+)
+
+response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+print(response.choices[0].message.content)`}
+                      </code>
+                    </pre>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="js" className="mt-4">
+                 <Card>
+                  <CardContent className="pt-4">
+                    <pre className="overflow-x-auto rounded-lg bg-black p-4">
+                      <code className="text-sm text-white">
+{`import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: 'sk-...',
+  baseURL: 'https://api-cli.proxy.vesper36.cc/v1',
+});
+
+const chatCompletion = await openai.chat.completions.create({
+  messages: [{ role: 'user', content: 'Hello!' }],
+  model: 'gpt-3.5-turbo',
+});
+
+console.log(chatCompletion.choices[0].message.content);`}
+                      </code>
+                    </pre>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </section>
+        </main>
+      </div>
     </div>
-  )
+  );
 }

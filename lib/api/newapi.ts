@@ -1,11 +1,20 @@
 import { QuotaInfo, UsageData, ModelStats } from '@/lib/types';
 
+export interface LogItem {
+  created_at: number;
+  type: number;
+  model_name: string;
+  quota: number;
+  content: string;
+  token: number;
+}
+
 export class NewAPIClient {
   private baseUrl: string;
   private apiKey: string;
 
   constructor(baseUrl: string, apiKey: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
+    this.baseUrl = baseUrl.replace(/\/$/, '');
     this.apiKey = apiKey;
   }
 
@@ -19,7 +28,6 @@ export class NewAPIClient {
     });
 
     if (!response.ok) {
-       // Try to parse error message
        try {
          const errorData = await response.json();
          throw new Error(errorData.error?.message || response.statusText);
@@ -28,27 +36,10 @@ export class NewAPIClient {
        }
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   }
 
   async getQuota(): Promise<QuotaInfo> {
-    // Strategy 1: /v1/dashboard/billing/subscription (OpenAI Standard)
-    try {
-        const result = await this.fetchProxy<any>('/v1/dashboard/billing/subscription');
-        if (result.hard_limit_usd !== undefined) {
-             return {
-                total_quota: result.hard_limit_usd,
-                used_quota: 0, // Need to fetch usage to know used quota
-                remaining_quota: result.hard_limit_usd, // Placeholder
-                quota_type: 'subscription'
-             }
-        }
-    } catch (e) {
-        // Ignore and try next
-    }
-
-    // Strategy 2: /api/user/self (New API User)
     try {
         const result = await this.fetchProxy<any>('/api/user/self');
         if (result.success && result.data) {
@@ -60,20 +51,20 @@ export class NewAPIClient {
              }
         }
     } catch (e) {
-        console.error("Failed to fetch quota from /api/user/self", e);
+        console.warn("Failed to fetch quota from /api/user/self", e);
     }
-
-    // Strategy 3: /dashboard/billing/credit_grants (Legacy)
+    
+    // Fallback to OpenAI subscription endpoint
     try {
-        const result = await this.fetchProxy<any>('/dashboard/billing/credit_grants');
-         if (result.total_granted) {
+        const result = await this.fetchProxy<any>('/v1/dashboard/billing/subscription');
+        if (result.hard_limit_usd !== undefined) {
              return {
-                total_quota: result.total_granted,
-                used_quota: result.total_used,
-                remaining_quota: result.total_available,
-                quota_type: 'credit_grants'
+                total_quota: result.hard_limit_usd,
+                used_quota: 0,
+                remaining_quota: result.hard_limit_usd,
+                quota_type: 'subscription'
              }
-         }
+        }
     } catch (e) {
          // Ignore
     }
@@ -81,32 +72,100 @@ export class NewAPIClient {
     return { total_quota: 0, used_quota: 0, remaining_quota: 0 };
   }
   
+  async getLogs(page: number = 1, perPage: number = 20): Promise<LogItem[]> {
+    try {
+      const result = await this.fetchProxy<any>(`/api/log/self?page=${page}&per_page=${perPage}`);
+      if (result.success && Array.isArray(result.data)) {
+        return result.data;
+      }
+    } catch (e) {
+      console.warn("Failed to fetch logs", e);
+    }
+    return [];
+  }
+
   async getUsage(startDate: string, endDate: string): Promise<UsageData[]> {
-      // /v1/dashboard/billing/usage
+      // Strategy 1: Aggregation from logs (Most accurate for New API)
+      try {
+        // Fetch last 1000 logs to aggregate stats (approx)
+        // In a real app, we might need a dedicated stats endpoint or fetch more pages
+        const logs = await this.getLogs(1, 100); 
+        
+        if (logs.length > 0) {
+            const usageMap = new Map<string, UsageData>();
+            
+            logs.forEach(log => {
+                const date = new Date(log.created_at * 1000).toISOString().split('T')[0];
+                if (!usageMap.has(date)) {
+                    usageMap.set(date, {
+                        date,
+                        total_calls: 0,
+                        total_tokens: 0,
+                        total_cost: 0,
+                        cache_hits: 0
+                    });
+                }
+                
+                const stats = usageMap.get(date)!;
+                stats.total_calls++;
+                stats.total_tokens += log.token || 0;
+                stats.total_cost += (log.quota || 0); // Quota is usually cost * 500000 or similar, but here we treat it as raw value for display
+            });
+            
+            return Array.from(usageMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+        }
+      } catch (e) {
+          console.warn("Failed to aggregate usage from logs", e);
+      }
+
+      // Strategy 2: /v1/dashboard/billing/usage
       try {
           const result = await this.fetchProxy<any>(`/v1/dashboard/billing/usage?start_date=${startDate}&end_date=${endDate}`);
-          // OpenAI usage format: { daily_costs: [{ timestamp: number, line_items: [{ name: string, cost: number }] }] }
-          // Or New API might return simple list
-          
           if (result.daily_costs) {
               return result.daily_costs.map((item: any) => ({
                   date: new Date(item.timestamp * 1000).toISOString().split('T')[0],
-                  total_calls: 0, // Not provided by this endpoint usually
-                  total_tokens: 0, // Not provided
+                  total_calls: 0, 
+                  total_tokens: 0,
                   total_cost: item.line_items.reduce((acc: number, cur: any) => acc + cur.cost, 0),
                   cache_hits: 0
               }));
           }
       } catch (e) {
-          console.error("Failed to fetch usage", e);
+          console.warn("Failed to fetch usage from billing endpoint", e);
       }
       return [];
   }
 
   async getModels(): Promise<ModelStats[]> {
-      // Hard to get model stats without logs.
-      // Maybe just list available models?
-      // /v1/models
+      try {
+          // Aggregate from logs first as it reflects actual usage
+          const logs = await this.getLogs(1, 100);
+          if (logs.length > 0) {
+               const modelMap = new Map<string, ModelStats>();
+               
+               logs.forEach(log => {
+                   if (!modelMap.has(log.model_name)) {
+                       modelMap.set(log.model_name, {
+                           model_name: log.model_name,
+                           total_calls: 0,
+                           total_tokens: 0,
+                           total_cost: 0
+                       });
+                   }
+                   
+                   const stats = modelMap.get(log.model_name)!;
+                   stats.total_calls++;
+                   stats.total_tokens += log.token || 0;
+                   stats.total_cost += log.quota || 0;
+               });
+               
+               return Array.from(modelMap.values()).sort((a, b) => b.total_calls - a.total_calls);
+          }
+      } catch (e) {
+          // Ignore
+      }
+
+      // Fallback: Just list models
       try {
           const result = await this.fetchProxy<any>('/v1/models');
           if (result.data) {
