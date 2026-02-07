@@ -20,9 +20,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Wallet, Activity, Database, Zap, Plus, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n/useI18n';
 
 export default function Dashboard() {
   const { keys } = useStore();
+  const t = useTranslation();
   const [selectedKeyId, setSelectedKeyId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -51,7 +53,7 @@ export default function Dashboard() {
     else setLoading(true);
 
     try {
-      const client = new NewAPIClient(selectedKey.baseUrl, selectedKey.key);
+      const client = new NewAPIClient(selectedKey.key);
       
       const [quotaData, logsData] = await Promise.all([
         client.getQuota(),
@@ -61,8 +63,6 @@ export default function Dashboard() {
       setQuota(quotaData);
       setLogs(logsData);
 
-      // Derive usage and models from logs for now (client handles this but we want fresh derivations)
-      // Actually, let's use client methods for usage/models to keep logic there
       const endDate = new Date().toISOString().split('T')[0];
       const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       
@@ -93,30 +93,46 @@ export default function Dashboard() {
   if (keys.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <div className="p-4 rounded-full bg-muted">
+        <div className="p-4 rounded-full bg-muted/30 backdrop-blur-sm">
           <Wallet className="w-12 h-12 text-muted-foreground" />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight">No API Keys Found</h2>
+        <h2 className="text-2xl font-bold tracking-tight">{t.keys.title}</h2>
         <p className="text-muted-foreground max-w-sm text-center">
-          Add your first API key to start tracking usage, balance, and analytics.
+          {t.keys.subtitle}
         </p>
         <Link href="/keys">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Add API Key
+            {t.keys.add}
           </Button>
         </Link>
       </div>
     );
   }
 
+  // Helper to format currency
+  const formatCurrency = (val: number | undefined) => {
+      // NewAPI usually returns quota in raw units (e.g. 500000 = ), but here we assume the API returns USD or we need to convert?
+      // Based on typical NewAPI: quota is 500000 per $. But let's assume the API client handles normalization or we display raw for now.
+      // Re-reading NewAPIClient: it returns result.data.quota directly.
+      // If it's standard OneAPI/NewAPI, 500000 units = .
+      if (val === undefined) return '$0.00';
+      
+      // Let's assume the API returns standard OneAPI units and convert to USD
+      const usd = val / 500000;
+      return `${usd.toFixed(4)}`;
+  };
+
   return (
     <div className="flex-1 space-y-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <div className="flex items-center space-x-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
+        <div>
+            <h2 className="text-3xl font-bold tracking-tight">{t.dashboard.title}</h2>
+            <p className="text-muted-foreground">{t.dashboard.subtitle}</p>
+        </div>
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
           <Select value={selectedKeyId} onValueChange={setSelectedKeyId}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full sm:w-[200px] glass">
               <SelectValue placeholder="Select API Key" />
             </SelectTrigger>
             <SelectContent>
@@ -132,6 +148,7 @@ export default function Dashboard() {
             size="icon" 
             onClick={() => fetchData(true)}
             disabled={loading || refreshing}
+            className="glass"
           >
             {refreshing ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -152,28 +169,32 @@ export default function Dashboard() {
         <div className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              title="Remaining Balance"
-              value={`$${quota?.remaining_quota?.toFixed(2) || '0.00'}`}
+              title={t.dashboard.remaining}
+              value={formatCurrency(quota?.remaining_quota)}
               icon={Wallet}
-              description="Available credits"
+              description={t.dashboard.balance}
+              className="glass"
             />
             <StatCard
-              title="Used Quota"
-              value={`$${quota?.used_quota?.toFixed(2) || '0.00'}`}
+              title={t.dashboard.used}
+              value={formatCurrency(quota?.used_quota)}
               icon={Activity}
-              description="Total consumption"
+              description="Since inception"
+              className="glass"
             />
             <StatCard
-              title="Total Requests"
+              title={t.dashboard.requests}
               value={usage.reduce((acc, curr) => acc + curr.total_calls, 0).toLocaleString()}
               icon={Zap}
-              description="Calls in last 30 days"
+              description="Last 30 days"
+              className="glass"
             />
             <StatCard
-              title="Active Models"
-              value={models.length}
+              title={t.dashboard.tokens}
+               value={(usage.reduce((acc, curr) => acc + curr.total_tokens, 0) / 1000).toFixed(1) + 'k'}
               icon={Database}
-              description="Models used recently"
+              description="Last 30 days"
+              className="glass"
             />
           </div>
 

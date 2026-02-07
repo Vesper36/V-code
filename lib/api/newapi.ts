@@ -10,11 +10,10 @@ export interface LogItem {
 }
 
 export class NewAPIClient {
-  private baseUrl: string;
+  private static readonly BASE_URL = 'https://api-cli.proxy.vesper36.cc';
   private apiKey: string;
 
-  constructor(baseUrl: string, apiKey: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
+  constructor(apiKey: string) {
     this.apiKey = apiKey;
   }
 
@@ -23,7 +22,7 @@ export class NewAPIClient {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.apiKey}`,
-        'x-base-url': this.baseUrl,
+        'x-base-url': NewAPIClient.BASE_URL,
       },
     });
 

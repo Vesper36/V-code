@@ -16,6 +16,7 @@ interface AppState {
   settings: {
     theme: 'light' | 'dark' | 'system';
     showBalance: boolean;
+    language: 'en' | 'zh';
   };
   updateSettings: (settings: Partial<AppState['settings']>) => void;
 }
@@ -51,6 +52,7 @@ export const useStore = create<AppState>()(
       settings: {
         theme: 'system',
         showBalance: true,
+        language: 'zh',
       },
       updateSettings: (newSettings) =>
         set((state) => ({
@@ -59,8 +61,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'v-ai-storage',
-      partialize: (state) => ({ keys: state.keys, settings: state.settings }), // Don't persist cache by default or do? Maybe yes for offline?
-      // Let's persist keys and settings. Cache can be transient or persisted if needed.
+      partialize: (state) => ({ keys: state.keys, settings: state.settings }),
     }
   )
 );

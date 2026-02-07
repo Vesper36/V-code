@@ -2,8 +2,6 @@ export interface APIKey {
   id: string;
   key: string;
   name: string;
-  platform: string;
-  baseUrl: string;
   createdAt: number;
 }
 
