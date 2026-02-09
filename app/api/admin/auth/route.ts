@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
     response.cookies.set('admin_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       sameSite: 'lax',
       maxAge,
       path: '/',
@@ -82,7 +82,7 @@ export async function DELETE(request: NextRequest) {
   const response = NextResponse.json({ success: true });
   response.cookies.set('admin_token', '', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     sameSite: 'lax',
     maxAge: 0,
     path: '/',
