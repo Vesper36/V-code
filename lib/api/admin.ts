@@ -90,7 +90,8 @@ export class AdminAPIClient {
   // Token Management
   async getTokens(page: number = 1, perPage: number = 20): Promise<{ data: AdminToken[]; total: number }> {
     const result = await this.fetchAPI<any>(`/api/token/?p=${page - 1}&size=${perPage}`);
-    return { data: result.data || [], total: result.total || 0 };
+    const paged = result.data || {};
+    return { data: paged.items || [], total: paged.total || 0 };
   }
 
   async createToken(data: {
@@ -131,7 +132,8 @@ export class AdminAPIClient {
   // User Management
   async getUsers(page: number = 1, perPage: number = 20): Promise<{ data: AdminUser[]; total: number }> {
     const result = await this.fetchAPI<any>(`/api/user/?p=${page - 1}&size=${perPage}`);
-    return { data: result.data || [], total: result.total || 0 };
+    const paged = result.data || {};
+    return { data: paged.items || [], total: paged.total || 0 };
   }
 
   async updateUserQuota(id: number, quota: number): Promise<boolean> {
@@ -153,7 +155,8 @@ export class AdminAPIClient {
   // Log Management
   async getLogs(page: number = 1, perPage: number = 20): Promise<{ data: AdminLogItem[]; total: number }> {
     const result = await this.fetchAPI<any>(`/api/log/?p=${page - 1}&size=${perPage}`);
-    return { data: result.data || [], total: result.total || 0 };
+    const paged = result.data || {};
+    return { data: paged.items || [], total: paged.total || 0 };
   }
 
   async searchLogs(params: {
@@ -175,13 +178,15 @@ export class AdminAPIClient {
     if (params.end_timestamp) query.set('end_timestamp', String(params.end_timestamp));
 
     const result = await this.fetchAPI<any>(`/api/log/search?${query.toString()}`);
-    return { data: result.data || [], total: result.total || 0 };
+    const paged = result.data || {};
+    return { data: paged.items || [], total: paged.total || 0 };
   }
 
   // Channel Management
   async getChannels(page: number = 1, perPage: number = 20): Promise<{ data: AdminChannel[]; total: number }> {
     const result = await this.fetchAPI<any>(`/api/channel/?p=${page - 1}&size=${perPage}`);
-    return { data: result.data || [], total: result.total || 0 };
+    const paged = result.data || {};
+    return { data: paged.items || [], total: paged.total || 0 };
   }
 
   async createChannel(data: {
@@ -235,7 +240,8 @@ export class AdminAPIClient {
   // User search
   async searchUsers(keyword: string, page: number = 1, perPage: number = 20): Promise<{ data: AdminUser[]; total: number }> {
     const result = await this.fetchAPI<any>(`/api/user/search?keyword=${encodeURIComponent(keyword)}&p=${page - 1}&size=${perPage}`);
-    return { data: result.data || [], total: result.total || 0 };
+    const paged = result.data || {};
+    return { data: paged.items || [], total: paged.total || 0 };
   }
 
   // User group management
@@ -375,6 +381,6 @@ export class AdminAPIClient {
   // Recent activity for dashboard
   async getRecentActivity(limit: number = 10): Promise<AdminLogItem[]> {
     const result = await this.getLogs(1, limit);
-    return result.data.slice(0, limit);
+    return (result.data || []).slice(0, limit);
   }
 }
