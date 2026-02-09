@@ -3,7 +3,6 @@
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { useTheme } from 'next-themes'
 import { Moon, Sun, Monitor, Trash2, Download, Languages, Bell, Database } from 'lucide-react'
 import { useState } from 'react'
@@ -33,8 +32,18 @@ export default function SettingsPage() {
   }
 
   const handleExportData = () => {
+    const storeData = localStorage.getItem('v-ai-storage');
+    let keysData = '[]';
+    if (storeData) {
+      try {
+        const parsed = JSON.parse(storeData);
+        keysData = JSON.stringify(parsed.state?.keys || []);
+      } catch {
+        keysData = '[]';
+      }
+    }
     const data = {
-      keys: localStorage.getItem('api_keys') || '[]',
+      keys: keysData,
       exportDate: new Date().toISOString()
     }
 

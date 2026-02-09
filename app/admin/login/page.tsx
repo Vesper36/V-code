@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { verifyAdminCredentials, saveAdminSession } from '@/lib/auth/admin';
+import { adminLogin } from '@/lib/auth/admin';
 import { toast } from 'sonner';
 import { Shield } from 'lucide-react';
 
@@ -21,12 +21,12 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      if (verifyAdminCredentials(username, password)) {
-        saveAdminSession({ username, loginTime: Date.now() });
+      const result = await adminLogin(username, password);
+      if (result.success) {
         toast.success('Login successful');
         router.push('/admin/dashboard');
       } else {
-        toast.error('Invalid username or password');
+        toast.error(result.error || 'Invalid username or password');
       }
     } catch {
       toast.error('Login failed');

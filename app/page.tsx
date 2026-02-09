@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useStore } from '@/lib/store/useStore';
 import { NewAPIClient, LogItem } from '@/lib/api/newapi';
 import { QuotaInfo, UsageData, ModelStats } from '@/lib/types';
@@ -46,15 +46,15 @@ export default function Dashboard() {
     [keys, selectedKeyId]
   );
 
-  const fetchData = async (isRefresh = false) => {
+  const fetchData = useCallback(async (isRefresh = false) => {
     if (!selectedKey) return;
-    
+
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
 
     try {
       const client = new NewAPIClient(selectedKey.key);
-      
+
       const [quotaData, logsData] = await Promise.all([
         client.getQuota(),
         client.getLogs(1, 100)
@@ -65,7 +65,7 @@ export default function Dashboard() {
 
       const endDate = new Date().toISOString().split('T')[0];
       const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
+
       const [usageData, modelData] = await Promise.all([
          client.getUsage(startDate, endDate),
          client.getModels()
@@ -73,7 +73,7 @@ export default function Dashboard() {
 
       setUsage(usageData);
       setModels(modelData);
-      
+
       if (isRefresh) toast.success('Dashboard updated');
     } catch (error) {
       console.error(error);
@@ -82,13 +82,13 @@ export default function Dashboard() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [selectedKey]);
 
   useEffect(() => {
     if (selectedKey) {
       fetchData();
     }
-  }, [selectedKey]);
+  }, [selectedKey, fetchData]);
 
   if (keys.length === 0) {
     return (
@@ -112,15 +112,9 @@ export default function Dashboard() {
 
   // Helper to format currency
   const formatCurrency = (val: number | undefined) => {
-      // NewAPI usually returns quota in raw units (e.g. 500000 = ), but here we assume the API returns USD or we need to convert?
-      // Based on typical NewAPI: quota is 500000 per $. But let's assume the API client handles normalization or we display raw for now.
-      // Re-reading NewAPIClient: it returns result.data.quota directly.
-      // If it's standard OneAPI/NewAPI, 500000 units = .
       if (val === undefined) return '$0.00';
-      
-      // Let's assume the API returns standard OneAPI units and convert to USD
       const usd = val / 500000;
-      return `${usd.toFixed(4)}`;
+      return `$${usd.toFixed(4)}`;
   };
 
   return (

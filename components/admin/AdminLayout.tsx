@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminHeader } from './AdminHeader';
 import { AdminSidebar } from './AdminSidebar';
-import { isAdminAuthenticated } from '@/lib/auth/admin';
+import { isAdminAuthenticated, checkAdminSession, clearAdminSession } from '@/lib/auth/admin';
+import { Loader2 } from 'lucide-react';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -12,17 +13,34 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
+  const [verified, setVerified] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    // Check authentication on mount
+    // Quick client-side check first
     if (!isAdminAuthenticated()) {
       router.push('/admin/login');
+      return;
     }
+
+    // Then verify with server
+    checkAdminSession().then((valid) => {
+      if (!valid) {
+        clearAdminSession();
+        router.push('/admin/login');
+      } else {
+        setVerified(true);
+      }
+      setChecking(false);
+    });
   }, [router]);
 
-  // Don't render content if not authenticated
-  if (!isAdminAuthenticated()) {
-    return null;
+  if (checking || !verified) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (

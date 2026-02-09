@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { clearAdminSession, getAdminSession } from '@/lib/auth/admin';
+import { adminLogout, getAdminSession } from '@/lib/auth/admin';
 import { LogOut, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
@@ -18,8 +18,8 @@ export function AdminHeader() {
     }
   }, []);
 
-  const handleLogout = () => {
-    clearAdminSession();
+  const handleLogout = async () => {
+    await adminLogout();
     toast.success('Logged out successfully');
     router.push('/admin/login');
   };

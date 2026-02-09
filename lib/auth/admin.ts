@@ -1,4 +1,4 @@
-// Admin authentication - simple fixed credentials
+// Admin authentication - server-side session based
 
 export interface AdminUser {
   username: string;
@@ -7,12 +7,54 @@ export interface AdminUser {
 
 const ADMIN_SESSION_KEY = 'admin_session';
 
-export function verifyAdminCredentials(username: string, password: string): boolean {
-  const adminUser = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'admin';
-  const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
-  return username === adminUser && password === adminPass;
+// Login via server API (credentials validated server-side)
+export async function adminLogin(username: string, password: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch('/api/admin/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      return { success: false, error: data?.error || 'Login failed' };
+    }
+
+    const data = await response.json();
+    // Save minimal client-side session info (for UI display only)
+    saveAdminSession({ username: data.username, loginTime: Date.now() });
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Network error' };
+  }
 }
 
+// Logout via server API
+export async function adminLogout(): Promise<void> {
+  try {
+    await fetch('/api/admin/auth', { method: 'DELETE' });
+  } catch {
+    // Ignore network errors on logout
+  }
+  clearAdminSession();
+}
+
+// Check if session is valid (server-side check)
+export async function checkAdminSession(): Promise<boolean> {
+  try {
+    const response = await fetch('/api/admin/auth');
+    if (response.ok) {
+      const data = await response.json();
+      return data.authenticated === true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// Client-side session helpers (for UI display only, not security)
 export function saveAdminSession(user: AdminUser): void {
   if (typeof window !== 'undefined') {
     localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(user));
@@ -24,14 +66,8 @@ export function getAdminSession(): AdminUser | null {
   try {
     const raw = localStorage.getItem(ADMIN_SESSION_KEY);
     if (!raw) return null;
-    const user: AdminUser = JSON.parse(raw);
-    if (Date.now() - user.loginTime > 24 * 60 * 60 * 1000) {
-      clearAdminSession();
-      return null;
-    }
-    return user;
+    return JSON.parse(raw);
   } catch {
-    clearAdminSession();
     return null;
   }
 }
@@ -42,6 +78,7 @@ export function clearAdminSession(): void {
   }
 }
 
+// Quick client-side check (for initial render, not authoritative)
 export function isAdminAuthenticated(): boolean {
   return getAdminSession() !== null;
 }

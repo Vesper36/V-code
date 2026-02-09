@@ -61,34 +61,22 @@ export interface AdminLogItem {
 }
 
 /**
- * Get an AdminAPIClient instance using the current session token.
- * Throws if not authenticated.
+ * Get an AdminAPIClient instance.
+ * No token needed - auth is handled by httpOnly cookie via admin-proxy.
  */
 export function getAdminClient(): AdminAPIClient {
-  const token = process.env.NEXT_PUBLIC_ADMIN_API_KEY || '';
-  if (!token) {
-    throw new Error('NEXT_PUBLIC_ADMIN_API_KEY not configured');
-  }
-  return new AdminAPIClient(token);
+  return new AdminAPIClient();
 }
 
 export class AdminAPIClient {
-  private static readonly BASE_URL = 'https://v-api.vesper36.top';
-  private token: string;
-
-  constructor(token: string) {
-    this.token = token;
-  }
-
   private async fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`/api/admin-proxy?path=${encodeURIComponent(path)}`, {
       ...options,
       headers: {
-        'Authorization': `Bearer ${this.token}`,
-        'x-base-url': AdminAPIClient.BASE_URL,
         'Content-Type': 'application/json',
         ...options?.headers,
       },
+      credentials: 'include',
     });
 
     if (!response.ok) {

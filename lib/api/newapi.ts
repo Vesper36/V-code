@@ -27,12 +27,14 @@ export class NewAPIClient {
     });
 
     if (!response.ok) {
+       let message = response.statusText;
        try {
          const errorData = await response.json();
-         throw new Error(errorData.error?.message || response.statusText);
-       } catch (e) {
-         throw new Error(`API Error: ${response.statusText}`);
+         message = errorData.error?.message || errorData.message || message;
+       } catch {
+         // use default statusText
        }
+       throw new Error(`API Error: ${message}`);
     }
 
     return await response.json();

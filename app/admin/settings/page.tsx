@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { clearAdminSession } from '@/lib/auth/admin';
+import { adminLogout, getAdminSession } from '@/lib/auth/admin';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Shield, Server, Key } from 'lucide-react';
@@ -17,18 +17,10 @@ export default function AdminSettingsPage() {
   const [newPwd, setNewPwd] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
 
-  const adminApiKey = process.env.NEXT_PUBLIC_ADMIN_API_KEY || '';
-  const maskedKey = adminApiKey
-    ? `${adminApiKey.substring(0, 8)}...${ adminApiKey.substring(adminApiKey.length - 4)}`
-    : 'Not configured';
+  const session = getAdminSession();
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
-    const envPwd = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
-    if (currentPwd !== envPwd) {
-      toast.error('Current password is incorrect');
-      return;
-    }
     if (newPwd.length < 6) {
       toast.error('New password must be at least 6 characters');
       return;
@@ -37,11 +29,11 @@ export default function AdminSettingsPage() {
       toast.error('Passwords do not match');
       return;
     }
-    toast.error('Password change requires updating NEXT_PUBLIC_ADMIN_PASSWORD in .env.local and redeploying');
+    toast.error('Password change requires updating ADMIN_PASSWORD in .env.local and redeploying');
   };
 
-  const handleLogoutAll = () => {
-    clearAdminSession();
+  const handleLogoutAll = async () => {
+    await adminLogout();
     toast.success('All sessions cleared');
     router.push('/admin/login');
   };
@@ -71,11 +63,11 @@ export default function AdminSettingsPage() {
               </div>
               <div className="grid gap-1">
                 <Label className="text-muted-foreground">Admin Username</Label>
-                <p className="text-sm font-mono">{process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'admin'}</p>
+                <p className="text-sm font-mono">{session?.username || '-'}</p>
               </div>
               <div className="grid gap-1">
                 <Label className="text-muted-foreground">Admin API Key</Label>
-                <p className="text-sm font-mono">{maskedKey}</p>
+                <p className="text-sm font-mono text-muted-foreground">Server-side only</p>
               </div>
               <div className="grid gap-1">
                 <Label className="text-muted-foreground">Session Expiry</Label>
