@@ -33,7 +33,7 @@ export function CreateKeyDialog({ onSuccess }: CreateKeyDialogProps) {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error('Please enter a key name');
+      toast.error('请输入密钥名称');
       return;
     }
 
@@ -50,7 +50,7 @@ export function CreateKeyDialog({ onSuccess }: CreateKeyDialogProps) {
       if (!unlimitedQuota && quota) {
         const usd = parseFloat(quota);
         if (isNaN(usd) || usd < 0) {
-          toast.error('Invalid quota amount');
+          toast.error('额度金额无效');
           setLoading(false);
           return;
         }
@@ -59,12 +59,12 @@ export function CreateKeyDialog({ onSuccess }: CreateKeyDialogProps) {
 
       await client.createToken(data);
 
-      toast.success('Key created successfully');
+      toast.success('密钥创建成功');
       setOpen(false);
       resetForm();
       onSuccess();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create key');
+      toast.error(error.message || '创建密钥失败');
     } finally {
       setLoading(false);
     }
@@ -81,34 +81,34 @@ export function CreateKeyDialog({ onSuccess }: CreateKeyDialogProps) {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Create Key
+          创建密钥
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] glass border-white/20">
         <DialogHeader>
-          <DialogTitle>Create New API Key</DialogTitle>
+          <DialogTitle>创建新 API 密钥</DialogTitle>
           <DialogDescription>
-            Create a new API key with custom quota and settings
+            创建具有自定义额度和设置的新 API 密钥
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Key Name *</Label>
+              <Label htmlFor="name">密钥名称 *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Production Key"
+                placeholder="例如: 生产环境密钥"
                 required
               />
             </div>
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Unlimited Quota</Label>
+                <Label>无限额度</Label>
                 <p className="text-sm text-muted-foreground">
-                  Allow unlimited API usage
+                  允许无限制使用 API
                 </p>
               </div>
               <Switch
@@ -119,7 +119,7 @@ export function CreateKeyDialog({ onSuccess }: CreateKeyDialogProps) {
 
             {!unlimitedQuota && (
               <div className="grid gap-2">
-                <Label htmlFor="quota">Initial Quota (USD)</Label>
+                <Label htmlFor="quota">初始额度 (USD)</Label>
                 <Input
                   id="quota"
                   type="number"
@@ -130,7 +130,7 @@ export function CreateKeyDialog({ onSuccess }: CreateKeyDialogProps) {
                   placeholder="e.g., 10.00"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Leave empty for $0 initial quota
+                  留空则初始额度为 $0
                 </p>
               </div>
             )}
@@ -142,10 +142,10 @@ export function CreateKeyDialog({ onSuccess }: CreateKeyDialogProps) {
               onClick={() => setOpen(false)}
               disabled={loading}
             >
-              Cancel
+              取消
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Key'}
+              {loading ? '创建中...' : '创建密钥'}
             </Button>
           </DialogFooter>
         </form>

@@ -25,13 +25,13 @@ export default function AdminLoginPage() {
     try {
       const result = await adminLogin(username, password, rememberMe);
       if (result.success) {
-        toast.success('Login successful');
+        toast.success('登录成功');
         router.push('/admin/dashboard');
       } else {
-        toast.error(result.error || 'Invalid username or password');
+        toast.error(result.error || '用户名或密码错误');
       }
     } catch {
-      toast.error('Login failed');
+      toast.error('登录失败');
     } finally {
       setLoading(false);
     }
@@ -45,26 +45,26 @@ export default function AdminLoginPage() {
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-2xl">Admin Login</CardTitle>
-            <CardDescription>Enter your credentials to access the admin panel</CardDescription>
+            <CardTitle className="text-2xl">管理后台</CardTitle>
+            <CardDescription>请输入管理员凭据以访问后台</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter username" required autoComplete="username" />
+              <Label htmlFor="username">用户名</Label>
+              <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="请输入用户名" required autoComplete="username" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" required autoComplete="current-password" />
+              <Label htmlFor="password">密码</Label>
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="请输入密码" required autoComplete="current-password" />
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v) => setRememberMe(v === true)} />
               <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">保持登录 (30天)</Label>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? '登录中...' : '登录'}
             </Button>
           </form>
         </CardContent>

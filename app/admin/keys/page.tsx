@@ -28,10 +28,10 @@ export default function AdminKeysPage() {
       const result = await client.getTokens(page, perPage);
       setKeys(result.data);
       setTotal(result.total);
-      if (isRefresh) toast.success('Keys refreshed');
+      if (isRefresh) toast.success('密钥列表已刷新');
     } catch (error: any) {
       console.error('Failed to fetch keys:', error);
-      toast.error(error.message || 'Failed to load keys');
+      toast.error(error.message || '加载密钥列表失败');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -57,29 +57,29 @@ export default function AdminKeysPage() {
       const client = getAdminClient();
       const newStatus = token.status === 1 ? 2 : 1;
       await client.toggleTokenStatus(token.id, newStatus);
-      toast.success(`Key ${newStatus === 1 ? 'enabled' : 'disabled'}`);
+      toast.success(`密钥已${newStatus === 1 ? '启用' : '禁用'}`);
       fetchKeys(true);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update status');
+      toast.error(error.message || '更新状态失败');
     }
   };
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`Are you sure you want to delete key "${name}"?`)) return;
+    if (!confirm(`确定删除密钥 "${name}" 吗?`)) return;
 
     try {
       const client = getAdminClient();
       await client.deleteToken(id);
-      toast.success('Key deleted');
+      toast.success('密钥已删除');
       fetchKeys(true);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to delete key');
+      toast.error(error.message || '删除密钥失败');
     }
   };
 
   const handleCopyKey = (key: string) => {
     navigator.clipboard.writeText(`sk-${key}`);
-    toast.success('Key copied to clipboard');
+    toast.success('密钥已复制到剪贴板');
   };
 
   const filteredKeys = search
@@ -93,9 +93,9 @@ export default function AdminKeysPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Keys Management</h1>
+            <h1 className="text-3xl font-bold tracking-tight">密钥管理</h1>
             <p className="text-muted-foreground">
-              Manage API keys, quotas, and permissions
+              管理 API 密钥、额度和权限
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export default function AdminKeysPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search keys..."
+              placeholder="搜索密钥..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -136,12 +136,12 @@ export default function AdminKeysPage() {
         ) : (
           <Card className="glass">
             <CardHeader>
-              <CardTitle>API Keys ({total})</CardTitle>
+              <CardTitle>API 密钥 ({total})</CardTitle>
             </CardHeader>
             <CardContent>
               {filteredKeys.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
-                  No keys found.
+                  未找到密钥。
                 </div>
               ) : (
                 <>
@@ -149,13 +149,13 @@ export default function AdminKeysPage() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left p-3 font-medium">Name</th>
-                          <th className="text-left p-3 font-medium">Key</th>
-                          <th className="text-left p-3 font-medium">Status</th>
-                          <th className="text-left p-3 font-medium">Remaining</th>
-                          <th className="text-left p-3 font-medium">Used</th>
-                          <th className="text-left p-3 font-medium">Created</th>
-                          <th className="text-right p-3 font-medium">Actions</th>
+                          <th className="text-left p-3 font-medium">名称</th>
+                          <th className="text-left p-3 font-medium">密钥</th>
+                          <th className="text-left p-3 font-medium">状态</th>
+                          <th className="text-left p-3 font-medium">剩余额度</th>
+                          <th className="text-left p-3 font-medium">已用</th>
+                          <th className="text-left p-3 font-medium">创建时间</th>
+                          <th className="text-right p-3 font-medium">操作</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -177,11 +177,11 @@ export default function AdminKeysPage() {
                                   ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                                   : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                               }`}>
-                                {key.status === 1 ? 'Enabled' : 'Disabled'}
+                                {key.status === 1 ? '已启用' : '已禁用'}
                               </span>
                             </td>
                             <td className="p-3">
-                              {key.unlimited_quota ? 'Unlimited' : formatQuota(key.remain_quota)}
+                              {key.unlimited_quota ? '无限' : formatQuota(key.remain_quota)}
                             </td>
                             <td className="p-3">{formatQuota(key.used_quota)}</td>
                             <td className="p-3 text-sm text-muted-foreground">
@@ -189,13 +189,13 @@ export default function AdminKeysPage() {
                             </td>
                             <td className="p-3 text-right">
                               <div className="flex items-center justify-end gap-1">
-                                <Button variant="ghost" size="icon" onClick={() => handleCopyKey(key.key)} title="Copy key">
+                                <Button variant="ghost" size="icon" onClick={() => handleCopyKey(key.key)} title="复制密钥">
                                   <Copy className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button variant="ghost" size="icon" onClick={() => handleToggleStatus(key)} title={key.status === 1 ? 'Disable' : 'Enable'}>
+                                <Button variant="ghost" size="icon" onClick={() => handleToggleStatus(key)} title={key.status === 1 ? '禁用' : '启用'}>
                                   <Power className={`h-3.5 w-3.5 ${key.status === 1 ? 'text-green-500' : 'text-muted-foreground'}`} />
                                 </Button>
-                                <Button variant="ghost" size="icon" onClick={() => handleDelete(key.id, key.name)} className="text-destructive hover:text-destructive" title="Delete">
+                                <Button variant="ghost" size="icon" onClick={() => handleDelete(key.id, key.name)} className="text-destructive hover:text-destructive" title="删除">
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </div>
@@ -209,14 +209,14 @@ export default function AdminKeysPage() {
                   {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4 pt-4 border-t">
                       <p className="text-sm text-muted-foreground">
-                        Page {page} of {totalPages}
+                        Page {page} / {totalPages}
                       </p>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-                          Previous
+                          上一页
                         </Button>
                         <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-                          Next
+                          下一页
                         </Button>
                       </div>
                     </div>

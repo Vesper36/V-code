@@ -86,9 +86,9 @@ export default function AdminAnalyticsPage() {
         Array.from(userMap.values()).sort((a, b) => b.requests - a.requests)
       );
 
-      if (isRefresh) toast.success('Analytics refreshed');
+      if (isRefresh) toast.success('分析数据已刷新');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to load analytics');
+      toast.error(error.message || '加载分析数据失败');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -142,13 +142,13 @@ export default function AdminAnalyticsPage() {
         <Tabs defaultValue="trend" className="space-y-4">
           <TabsList>
             <TabsTrigger value="trend" className="gap-2">
-              <TrendingUp className="h-4 w-4" /> Trend
+              <TrendingUp className="h-4 w-4" /> 趋势
             </TabsTrigger>
             <TabsTrigger value="models" className="gap-2">
-              <BarChart3 className="h-4 w-4" /> Models
+              <BarChart3 className="h-4 w-4" /> 模型
             </TabsTrigger>
             <TabsTrigger value="users" className="gap-2">
-              <PieChartIcon className="h-4 w-4" /> Users
+              <PieChartIcon className="h-4 w-4" /> 用户
             </TabsTrigger>
           </TabsList>
 
@@ -180,9 +180,9 @@ function AnalyticsHeader({ days, onDaysChange, refreshing, onRefresh }: {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+        <h1 className="text-3xl font-bold tracking-tight">数据分析</h1>
         <p className="text-muted-foreground">
-          Usage statistics and consumption analysis
+          使用统计与消耗分析
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -191,9 +191,9 @@ function AnalyticsHeader({ days, onDaysChange, refreshing, onRefresh }: {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">Last 7 days</SelectItem>
-            <SelectItem value="14">Last 14 days</SelectItem>
-            <SelectItem value="30">Last 30 days</SelectItem>
+            <SelectItem value="7">最近 7 天</SelectItem>
+            <SelectItem value="14">最近 14 天</SelectItem>
+            <SelectItem value="30">最近 30 天</SelectItem>
           </SelectContent>
         </Select>
         <Button variant="outline" size="icon" onClick={onRefresh} disabled={refreshing}>
@@ -218,7 +218,7 @@ function SummaryCards({ totalRequests, totalQuota, totalTokens, fmtQuota }: {
     <div className="grid gap-4 md:grid-cols-3">
       <Card className="glass">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+          <CardTitle className="text-sm font-medium">总请求数</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalRequests.toLocaleString()}</div>
@@ -226,7 +226,7 @@ function SummaryCards({ totalRequests, totalQuota, totalTokens, fmtQuota }: {
       </Card>
       <Card className="glass">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Total Consumption</CardTitle>
+          <CardTitle className="text-sm font-medium">总消耗</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{fmtQuota(totalQuota)}</div>
@@ -234,7 +234,7 @@ function SummaryCards({ totalRequests, totalQuota, totalTokens, fmtQuota }: {
       </Card>
       <Card className="glass">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Total Tokens</CardTitle>
+          <CardTitle className="text-sm font-medium">总令牌数</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalTokens.toLocaleString()}</div>
@@ -253,8 +253,8 @@ function TrendChart({ data, fmtQuotaShort, fmtQuota }: {
     <div className="grid gap-4 lg:grid-cols-2">
       <Card className="glass">
         <CardHeader>
-          <CardTitle>Requests Trend</CardTitle>
-          <CardDescription>Daily API request count</CardDescription>
+          <CardTitle>请求趋势</CardTitle>
+          <CardDescription>每日 API 请求量</CardDescription>
         </CardHeader>
         <CardContent className="pl-2">
           <ResponsiveContainer width="100%" height={300}>
@@ -267,9 +267,9 @@ function TrendChart({ data, fmtQuotaShort, fmtQuota }: {
               </defs>
               <XAxis dataKey="date" stroke="#888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => v.slice(5)} />
               <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip labelFormatter={(l) => `Date: ${l}`} />
+              <Tooltip labelFormatter={(l) => `日期: ${l}`} />
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <Area type="monotone" dataKey="requests" stroke="#8b5cf6" fillOpacity={1} fill="url(#analyticsReqs)" name="Requests" />
+              <Area type="monotone" dataKey="requests" stroke="#8b5cf6" fillOpacity={1} fill="url(#analyticsReqs)" name="请求数" />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
@@ -277,8 +277,8 @@ function TrendChart({ data, fmtQuotaShort, fmtQuota }: {
 
       <Card className="glass">
         <CardHeader>
-          <CardTitle>Consumption Trend</CardTitle>
-          <CardDescription>Daily quota consumption</CardDescription>
+          <CardTitle>消耗趋势</CardTitle>
+          <CardDescription>每日额度消耗</CardDescription>
         </CardHeader>
         <CardContent className="pl-2">
           <ResponsiveContainer width="100%" height={300}>
@@ -291,9 +291,9 @@ function TrendChart({ data, fmtQuotaShort, fmtQuota }: {
               </defs>
               <XAxis dataKey="date" stroke="#888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => v.slice(5)} />
               <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => fmtQuotaShort(v)} />
-              <Tooltip formatter={(value) => [fmtQuota(Number(value ?? 0)), 'Quota']} labelFormatter={(l) => `Date: ${l}`} />
+              <Tooltip formatter={(value) => [fmtQuota(Number(value ?? 0)), '额度']} labelFormatter={(l) => `日期: ${l}`} />
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <Area type="monotone" dataKey="quota" stroke="#06b6d4" fillOpacity={1} fill="url(#analyticsQuota)" name="Quota" />
+              <Area type="monotone" dataKey="quota" stroke="#06b6d4" fillOpacity={1} fill="url(#analyticsQuota)" name="额度" />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
@@ -312,8 +312,8 @@ function ModelsChart({ data, fmtQuota }: {
     <div className="grid gap-4 lg:grid-cols-2">
       <Card className="glass">
         <CardHeader>
-          <CardTitle>Model Requests</CardTitle>
-          <CardDescription>Request count by model</CardDescription>
+          <CardTitle>模型请求量</CardTitle>
+          <CardDescription>按模型统计的请求数</CardDescription>
         </CardHeader>
         <CardContent className="pl-2">
           <ResponsiveContainer width="100%" height={350}>
@@ -330,7 +330,7 @@ function ModelsChart({ data, fmtQuota }: {
                 tickFormatter={(v) => v.length > 20 ? v.slice(0, 20) + '...' : v}
               />
               <Tooltip />
-              <Bar dataKey="requests" name="Requests" radius={[0, 4, 4, 0]}>
+              <Bar dataKey="requests" name="请求数" radius={[0, 4, 4, 0]}>
                 {top10.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
@@ -342,8 +342,8 @@ function ModelsChart({ data, fmtQuota }: {
 
       <Card className="glass">
         <CardHeader>
-          <CardTitle>Model Consumption</CardTitle>
-          <CardDescription>Quota consumption by model</CardDescription>
+          <CardTitle>模型消耗</CardTitle>
+          <CardDescription>按模型统计的额度消耗</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={350}>
@@ -367,7 +367,7 @@ function ModelsChart({ data, fmtQuota }: {
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => [fmtQuota(Number(value ?? 0)), 'Quota']} />
+              <Tooltip formatter={(value) => [fmtQuota(Number(value ?? 0)), '额度']} />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
@@ -387,8 +387,8 @@ function UsersChart({ data, fmtQuota }: {
       {/* User requests bar chart */}
       <Card className="glass">
         <CardHeader>
-          <CardTitle>User Requests</CardTitle>
-          <CardDescription>Top users by request count</CardDescription>
+          <CardTitle>用户请求量</CardTitle>
+          <CardDescription>按请求数排名的用户</CardDescription>
         </CardHeader>
         <CardContent className="pl-2">
           <ResponsiveContainer width="100%" height={350}>
@@ -403,7 +403,7 @@ function UsersChart({ data, fmtQuota }: {
               />
               <YAxis fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip />
-              <Bar dataKey="requests" name="Requests" radius={[4, 4, 0, 0]}>
+              <Bar dataKey="requests" name="请求数" radius={[4, 4, 0, 0]}>
                 {top10.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
@@ -416,22 +416,22 @@ function UsersChart({ data, fmtQuota }: {
       {/* User ranking table */}
       <Card className="glass">
         <CardHeader>
-          <CardTitle>User Ranking</CardTitle>
-          <CardDescription>Detailed usage by user</CardDescription>
+          <CardTitle>用户排名</CardTitle>
+          <CardDescription>按用户统计的详细使用情况</CardDescription>
         </CardHeader>
         <CardContent>
           {top10.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">No user data</p>
+            <p className="text-center py-8 text-muted-foreground">暂无用户数据</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
                     <th className="text-left p-2 font-medium text-sm">#</th>
-                    <th className="text-left p-2 font-medium text-sm">User</th>
-                    <th className="text-right p-2 font-medium text-sm">Requests</th>
-                    <th className="text-right p-2 font-medium text-sm">Tokens</th>
-                    <th className="text-right p-2 font-medium text-sm">Quota</th>
+                    <th className="text-left p-2 font-medium text-sm">用户</th>
+                    <th className="text-right p-2 font-medium text-sm">请求数</th>
+                    <th className="text-right p-2 font-medium text-sm">令牌数</th>
+                    <th className="text-right p-2 font-medium text-sm">额度</th>
                   </tr>
                 </thead>
                 <tbody>

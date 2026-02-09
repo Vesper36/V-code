@@ -62,9 +62,9 @@ export default function AdminDashboardPage() {
       setTrend(trendData);
       setModels(modelData.slice(0, 8));
       setRecentLogs(logsData);
-      if (isRefresh) toast.success('Dashboard refreshed');
+      if (isRefresh) toast.success('仪表盘已刷新');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to load dashboard');
+      toast.error(error.message || '加载仪表盘失败');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -102,9 +102,9 @@ export default function AdminDashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight">仪表盘</h1>
             <p className="text-muted-foreground">
-              Overview of your API management system
+              API 管理系统概览
             </p>
           </div>
           <Button
@@ -124,39 +124,39 @@ export default function AdminDashboardPage() {
         {/* Stat Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <StatCard
-            title="Total Users"
+            title="总用户数"
             value={String(stats?.totalUsers ?? 0)}
-            desc="Registered users"
+            desc="已注册用户"
             icon={<Users className="h-4 w-4 text-muted-foreground" />}
           />
           <StatCard
-            title="Active Keys"
+            title="活跃密钥"
             value={String(stats?.activeTokens ?? 0)}
-            desc="Enabled tokens"
+            desc="已启用令牌"
             icon={<Key className="h-4 w-4 text-muted-foreground" />}
           />
           <StatCard
-            title="Total Quota"
+            title="总额度"
             value={fmtQuota(stats?.totalQuota ?? 0)}
-            desc="Allocated"
+            desc="已分配"
             icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           />
           <StatCard
-            title="Used Quota"
+            title="已用额度"
             value={fmtQuota(stats?.usedQuota ?? 0)}
-            desc="Consumed"
+            desc="已消耗"
             icon={<Activity className="h-4 w-4 text-muted-foreground" />}
           />
           <StatCard
-            title="Today Requests"
+            title="今日请求"
             value={String(stats?.todayRequests ?? 0)}
-            desc="API calls today"
+            desc="今日 API 调用"
             icon={<Zap className="h-4 w-4 text-muted-foreground" />}
           />
           <StatCard
-            title="Today Cost"
+            title="今日消耗"
             value={fmtQuota(stats?.todayConsumption ?? 0)}
-            desc="Consumed today"
+            desc="今日已消耗"
             icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
           />
         </div>
@@ -166,8 +166,8 @@ export default function AdminDashboardPage() {
           {/* Usage Trend */}
           <Card className="glass lg:col-span-4">
             <CardHeader>
-              <CardTitle>Usage Trend (7 Days)</CardTitle>
-              <CardDescription>Daily requests and quota consumption</CardDescription>
+              <CardTitle>使用趋势 (7天)</CardTitle>
+              <CardDescription>每日请求量与额度消耗</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
               <ResponsiveContainer width="100%" height={300}>
@@ -209,10 +209,10 @@ export default function AdminDashboardPage() {
                   <Tooltip
                     formatter={(value, name) => {
                       const v = Number(value ?? 0);
-                      if (name === 'Quota') return [fmtQuota(v), name];
+                      if (name === '额度') return [fmtQuota(v), name];
                       return [v, name];
                     }}
-                    labelFormatter={(label) => `Date: ${label}`}
+                    labelFormatter={(label) => `日期: ${label}`}
                   />
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <Area
@@ -222,7 +222,7 @@ export default function AdminDashboardPage() {
                     stroke="#8b5cf6"
                     fillOpacity={1}
                     fill="url(#adminReqs)"
-                    name="Requests"
+                    name="请求数"
                   />
                   <Area
                     yAxisId="right"
@@ -231,7 +231,7 @@ export default function AdminDashboardPage() {
                     stroke="#06b6d4"
                     fillOpacity={1}
                     fill="url(#adminQuota)"
-                    name="Quota"
+                    name="额度"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -241,8 +241,8 @@ export default function AdminDashboardPage() {
           {/* Model Distribution */}
           <Card className="glass lg:col-span-3">
             <CardHeader>
-              <CardTitle>Top Models</CardTitle>
-              <CardDescription>Most used models by request count</CardDescription>
+              <CardTitle>热门模型</CardTitle>
+              <CardDescription>按请求量排序的常用模型</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
               <ResponsiveContainer width="100%" height={300}>
@@ -263,7 +263,7 @@ export default function AdminDashboardPage() {
                     tickFormatter={(v) => v.length > 18 ? v.slice(0, 18) + '...' : v}
                   />
                   <Tooltip />
-                  <Bar dataKey="requests" fill="#a78bfa" radius={[0, 4, 4, 0]} name="Requests" />
+                  <Bar dataKey="requests" fill="#a78bfa" radius={[0, 4, 4, 0]} name="请求数" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -273,22 +273,22 @@ export default function AdminDashboardPage() {
         {/* Recent Activity */}
         <Card className="glass">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>最近活动</CardTitle>
             <CardDescription>Latest API request logs</CardDescription>
           </CardHeader>
           <CardContent>
             {recentLogs.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">No recent activity</p>
+              <p className="text-center py-8 text-muted-foreground">暂无活动记录</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-3 font-medium">Time</th>
-                      <th className="text-left p-3 font-medium">User</th>
-                      <th className="text-left p-3 font-medium">Model</th>
-                      <th className="text-left p-3 font-medium">Tokens</th>
-                      <th className="text-right p-3 font-medium">Quota</th>
+                      <th className="text-left p-3 font-medium">时间</th>
+                      <th className="text-left p-3 font-medium">用户</th>
+                      <th className="text-left p-3 font-medium">模型</th>
+                      <th className="text-left p-3 font-medium">令牌数</th>
+                      <th className="text-right p-3 font-medium">额度</th>
                     </tr>
                   </thead>
                   <tbody>

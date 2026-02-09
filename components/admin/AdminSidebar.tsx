@@ -17,13 +17,13 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   const navItems = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/keys', label: 'Keys', icon: Key },
-    { href: '/admin/users', label: 'Users', icon: Users },
-    { href: '/admin/channels', label: 'Channels', icon: Radio },
-    { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-    { href: '/admin/logs', label: 'Logs', icon: FileText },
-    { href: '/admin/settings', label: 'Settings', icon: Settings },
+    { href: '/admin/dashboard', label: '仪表盘', icon: LayoutDashboard },
+    { href: '/admin/keys', label: '密钥管理', icon: Key },
+    { href: '/admin/users', label: '用户管理', icon: Users },
+    { href: '/admin/channels', label: '渠道管理', icon: Radio },
+    { href: '/admin/analytics', label: '数据分析', icon: BarChart3 },
+    { href: '/admin/logs', label: '系统日志', icon: FileText },
+    { href: '/admin/settings', label: '系统设置', icon: Settings },
   ];
 
   return (

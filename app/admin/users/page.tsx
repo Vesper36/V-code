@@ -38,9 +38,9 @@ export default function AdminUsersPage() {
       const result = await client.getUsers(page, perPage);
       setUsers(result.data);
       setTotal(result.total);
-      if (isRefresh) toast.success('Users refreshed');
+      if (isRefresh) toast.success('用户列表已刷新');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to load users');
+      toast.error(error.message || '加载用户列表失败');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -62,23 +62,23 @@ export default function AdminUsersPage() {
   };
 
   const getRoleName = (role: number) => {
-    if (role >= 100) return 'Super Admin';
-    if (role >= 10) return 'Admin';
-    return 'User';
+    if (role >= 100) return '超级管理员';
+    if (role >= 10) return '管理员';
+    return '用户';
   };
 
   const handleToggleStatus = async (user: AdminUser) => {
     const newStatus = user.status === 1 ? 2 : 1;
-    const action = newStatus === 1 ? 'enable' : 'disable';
-    if (!confirm(`${action} user "${user.username}"?`)) return;
+    const action = newStatus === 1 ? '启用' : '禁用';
+    if (!confirm(`确定${action}用户 "${user.username}" 吗?`)) return;
 
     try {
       const client = getAdminClient();
       await client.updateUserStatus(user.id, newStatus);
-      toast.success(`User ${action}d`);
+      toast.success(`用户已${action}`);
       fetchUsers(true);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update user status');
+      toast.error(error.message || '更新用户状态失败');
     }
   };
 
@@ -91,18 +91,18 @@ export default function AdminUsersPage() {
     if (!editingUser) return;
     const usd = parseFloat(editQuota);
     if (isNaN(usd) || usd < 0) {
-      toast.error('Invalid quota amount');
+      toast.error('额度金额无效');
       return;
     }
     setEditLoading(true);
     try {
       const client = getAdminClient();
       await client.updateUserQuota(editingUser.id, Math.floor(usd * 500000));
-      toast.success(`Quota updated for ${editingUser.username}`);
+      toast.success(`已更新 ${editingUser.username} 的额度`);
       setEditingUser(null);
       fetchUsers(true);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update quota');
+      toast.error(error.message || '更新额度失败');
     } finally {
       setEditLoading(false);
     }
@@ -123,9 +123,9 @@ export default function AdminUsersPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Users Management</h1>
+            <h1 className="text-3xl font-bold tracking-tight">用户管理</h1>
             <p className="text-muted-foreground">
-              Manage users, quotas, and permissions
+              管理用户、额度和权限
             </p>
           </div>
           <Button
@@ -145,7 +145,7 @@ export default function AdminUsersPage() {
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search users..."
+            placeholder="搜索用户..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -161,12 +161,12 @@ export default function AdminUsersPage() {
         ) : (
           <Card className="glass">
             <CardHeader>
-              <CardTitle>Users ({total})</CardTitle>
+              <CardTitle>用户列表 ({total})</CardTitle>
             </CardHeader>
             <CardContent>
               {filteredUsers.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
-                  No users found.
+                  未找到用户。
                 </div>
               ) : (
                 <>
@@ -175,15 +175,15 @@ export default function AdminUsersPage() {
                       <thead>
                         <tr className="border-b">
                           <th className="text-left p-3 font-medium">ID</th>
-                          <th className="text-left p-3 font-medium">Username</th>
-                          <th className="text-left p-3 font-medium">Display Name</th>
-                          <th className="text-left p-3 font-medium">Role</th>
-                          <th className="text-left p-3 font-medium">Status</th>
-                          <th className="text-left p-3 font-medium">Quota</th>
-                          <th className="text-left p-3 font-medium">Used</th>
-                          <th className="text-left p-3 font-medium">Requests</th>
-                          <th className="text-left p-3 font-medium">Group</th>
-                          <th className="text-right p-3 font-medium">Actions</th>
+                          <th className="text-left p-3 font-medium">用户名</th>
+                          <th className="text-left p-3 font-medium">显示名称</th>
+                          <th className="text-left p-3 font-medium">角色</th>
+                          <th className="text-left p-3 font-medium">状态</th>
+                          <th className="text-left p-3 font-medium">额度</th>
+                          <th className="text-left p-3 font-medium">已用</th>
+                          <th className="text-left p-3 font-medium">请求数</th>
+                          <th className="text-left p-3 font-medium">分组</th>
+                          <th className="text-right p-3 font-medium">操作</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -207,7 +207,7 @@ export default function AdminUsersPage() {
                                   ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                                   : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                               }`}>
-                                {user.status === 1 ? 'Active' : 'Disabled'}
+                                {user.status === 1 ? '已启用' : '已禁用'}
                               </span>
                             </td>
                             <td className="p-3">{formatQuota(user.quota)}</td>
@@ -220,7 +220,7 @@ export default function AdminUsersPage() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => openEditQuota(user)}
-                                  title="Edit quota"
+                                  title="编辑额度"
                                 >
                                   <DollarSign className="h-3.5 w-3.5" />
                                 </Button>
@@ -228,7 +228,7 @@ export default function AdminUsersPage() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleToggleStatus(user)}
-                                  title={user.status === 1 ? 'Disable user' : 'Enable user'}
+                                  title={user.status === 1 ? '禁用用户' : '启用用户'}
                                 >
                                   {user.status === 1 ? (
                                     <UserX className="h-3.5 w-3.5 text-destructive" />
@@ -247,14 +247,14 @@ export default function AdminUsersPage() {
                   {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4 pt-4 border-t">
                       <p className="text-sm text-muted-foreground">
-                        Page {page} of {totalPages}
+                        Page {page} / {totalPages}
                       </p>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-                          <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                          <ChevronLeft className="h-4 w-4 mr-1" /> 上一页
                         </Button>
                         <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-                          Next <ChevronRight className="h-4 w-4 ml-1" />
+                          下一页 <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
                       </div>
                     </div>
@@ -268,26 +268,26 @@ export default function AdminUsersPage() {
         <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
           <DialogContent className="sm:max-w-[400px] glass border-white/20">
             <DialogHeader>
-              <DialogTitle>Edit Quota</DialogTitle>
+              <DialogTitle>编辑额度</DialogTitle>
               <DialogDescription>
-                Update quota for user: {editingUser?.username}
+                更新用户额度: {editingUser?.username}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label>Current Quota</Label>
+                <Label>当前额度</Label>
                 <p className="text-sm text-muted-foreground">
                   {editingUser ? `$${(editingUser.quota / 500000).toFixed(4)}` : '-'}
                 </p>
               </div>
               <div className="grid gap-2">
-                <Label>Current Used</Label>
+                <Label>已用额度</Label>
                 <p className="text-sm text-muted-foreground">
                   {editingUser ? `$${(editingUser.used_quota / 500000).toFixed(4)}` : '-'}
                 </p>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-quota">New Quota (USD)</Label>
+                <Label htmlFor="edit-quota">新额度 (USD)</Label>
                 <Input
                   id="edit-quota"
                   type="number"
@@ -301,10 +301,10 @@ export default function AdminUsersPage() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setEditingUser(null)} disabled={editLoading}>
-                Cancel
+                取消
               </Button>
               <Button onClick={handleEditQuota} disabled={editLoading}>
-                {editLoading ? 'Saving...' : 'Save'}
+                {editLoading ? '保存中...' : '保存'}
               </Button>
             </DialogFooter>
           </DialogContent>

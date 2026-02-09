@@ -79,9 +79,9 @@ export default function AdminLogsPage() {
 
       setLogs(filtered);
       setTotal(result.total);
-      if (isRefresh) toast.success('Logs refreshed');
+      if (isRefresh) toast.success('日志已刷新');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to load logs');
+      toast.error(error.message || '加载日志失败');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -159,9 +159,9 @@ function LogsHeader({ refreshing, onRefresh, loading, showFilters, onToggleFilte
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">System Logs</h1>
+        <h1 className="text-3xl font-bold tracking-tight">系统日志</h1>
         <p className="text-muted-foreground">
-          View request logs and API usage records
+          查看请求日志和 API 使用记录
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -172,7 +172,7 @@ function LogsHeader({ refreshing, onRefresh, loading, showFilters, onToggleFilte
           className="gap-2"
         >
           <Filter className="h-4 w-4" />
-          Filters
+          筛选
         </Button>
         <Button
           variant="outline"
@@ -212,11 +212,11 @@ function LogsFilters({ show, keyword, onKeywordChange, modelFilter, onModelFilte
       <CardContent className="pt-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Keyword</label>
+            <label className="text-sm font-medium">关键词</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search logs..."
+                placeholder="搜索日志..."
                 value={keyword}
                 onChange={(e) => onKeywordChange(e.target.value)}
                 className="pl-9"
@@ -226,9 +226,9 @@ function LogsFilters({ show, keyword, onKeywordChange, modelFilter, onModelFilte
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Model</label>
+            <label className="text-sm font-medium">模型</label>
             <Input
-              placeholder="Filter by model..."
+              placeholder="按模型筛选..."
               value={modelFilter}
               onChange={(e) => onModelFilterChange(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onSearch()}
@@ -236,33 +236,33 @@ function LogsFilters({ show, keyword, onKeywordChange, modelFilter, onModelFilte
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Type</label>
+            <label className="text-sm font-medium">类型</label>
             <Select value={typeFilter} onValueChange={onTypeFilterChange}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="1">Topup</SelectItem>
-                <SelectItem value="2">Consume</SelectItem>
-                <SelectItem value="3">Manage</SelectItem>
-                <SelectItem value="4">System</SelectItem>
+                <SelectItem value="all">全部类型</SelectItem>
+                <SelectItem value="1">充值</SelectItem>
+                <SelectItem value="2">消费</SelectItem>
+                <SelectItem value="3">管理</SelectItem>
+                <SelectItem value="4">系统</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Time Range</label>
+            <label className="text-sm font-medium">时间范围</label>
             <Select value={dateRange} onValueChange={onDateRangeChange}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Time</SelectItem>
-                <SelectItem value="1h">Last 1 Hour</SelectItem>
-                <SelectItem value="24h">Last 24 Hours</SelectItem>
-                <SelectItem value="7d">Last 7 Days</SelectItem>
-                <SelectItem value="30d">Last 30 Days</SelectItem>
+                <SelectItem value="all">全部时间</SelectItem>
+                <SelectItem value="1h">最近 1 小时</SelectItem>
+                <SelectItem value="24h">最近 24 小时</SelectItem>
+                <SelectItem value="7d">最近 7 天</SelectItem>
+                <SelectItem value="30d">最近 30 天</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -270,11 +270,11 @@ function LogsFilters({ show, keyword, onKeywordChange, modelFilter, onModelFilte
 
         <div className="flex items-center gap-2 mt-4">
           <Button size="sm" onClick={onSearch} className="gap-2">
-            <Search className="h-4 w-4" /> Search
+            <Search className="h-4 w-4" /> 搜索
           </Button>
           {hasActiveFilters && (
             <Button size="sm" variant="outline" onClick={onClear} className="gap-2">
-              <X className="h-4 w-4" /> Clear
+              <X className="h-4 w-4" /> 清除
             </Button>
           )}
         </div>
@@ -303,11 +303,11 @@ function LogsTable({ logs, loading, total, page, totalPages, onPageChange }: {
 
   const getTypeName = (type: number) => {
     switch (type) {
-      case 1: return 'Topup';
-      case 2: return 'Consume';
-      case 3: return 'Manage';
-      case 4: return 'System';
-      default: return `Type ${type}`;
+      case 1: return '充值';
+      case 2: return '消费';
+      case 3: return '管理';
+      case 4: return '系统';
+      default: return `类型 ${type}`;
     }
   };
 
@@ -333,26 +333,26 @@ function LogsTable({ logs, loading, total, page, totalPages, onPageChange }: {
   return (
     <Card className="glass">
       <CardHeader>
-        <CardTitle>Logs ({total})</CardTitle>
+        <CardTitle>日志 ({total})</CardTitle>
       </CardHeader>
       <CardContent>
         {logs.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            No logs found.
+            暂无日志记录。
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-3 font-medium">Time</th>
-                  <th className="text-left p-3 font-medium">Type</th>
-                  <th className="text-left p-3 font-medium">User</th>
-                  <th className="text-left p-3 font-medium">Token</th>
-                  <th className="text-left p-3 font-medium">Model</th>
-                  <th className="text-left p-3 font-medium">Prompt</th>
-                  <th className="text-left p-3 font-medium">Completion</th>
-                  <th className="text-left p-3 font-medium">Quota</th>
+                  <th className="text-left p-3 font-medium">时间</th>
+                  <th className="text-left p-3 font-medium">类型</th>
+                  <th className="text-left p-3 font-medium">用户</th>
+                  <th className="text-left p-3 font-medium">令牌</th>
+                  <th className="text-left p-3 font-medium">模型</th>
+                  <th className="text-left p-3 font-medium">提示词</th>
+                  <th className="text-left p-3 font-medium">补全</th>
+                  <th className="text-left p-3 font-medium">额度</th>
                 </tr>
               </thead>
               <tbody>
@@ -382,14 +382,14 @@ function LogsTable({ logs, loading, total, page, totalPages, onPageChange }: {
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 pt-4 border-t">
             <p className="text-sm text-muted-foreground">
-              Page {page} of {totalPages}
+              Page {page} / {totalPages}
             </p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
-                <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                <ChevronLeft className="h-4 w-4 mr-1" /> 上一页
               </Button>
               <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>
-                Next <ChevronRight className="h-4 w-4 ml-1" />
+                下一页 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           </div>

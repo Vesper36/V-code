@@ -20,7 +20,7 @@ export function AdminHeader() {
 
   const handleLogout = async () => {
     await adminLogout();
-    toast.success('Logged out successfully');
+    toast.success('已退出登录');
     router.push('/admin/login');
   };
 
@@ -42,7 +42,7 @@ export function AdminHeader() {
             className="gap-2"
           >
             <LogOut className="h-4 w-4" />
-            Logout
+            退出
           </Button>
         </div>
       </div>
