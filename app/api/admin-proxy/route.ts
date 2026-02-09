@@ -78,12 +78,12 @@ async function handleRequest(request: NextRequest, method: string) {
       );
     }
 
-    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+    const adminUserId = process.env.ADMIN_USER_ID || '1';
     const url = `${baseUrl}${path}`;
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${adminApiKey}`,
-      'New-Api-User': adminUsername,
+      'New-Api-User': adminUserId,
     };
 
     const options: RequestInit = { method, headers };
