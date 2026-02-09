@@ -8,12 +8,12 @@ export interface AdminUser {
 const ADMIN_SESSION_KEY = 'admin_session';
 
 // Login via server API (credentials validated server-side)
-export async function adminLogin(username: string, password: string): Promise<{ success: boolean; error?: string }> {
+export async function adminLogin(username: string, password: string, rememberMe: boolean = false): Promise<{ success: boolean; error?: string }> {
   try {
     const response = await fetch('/api/admin/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, rememberMe }),
     });
 
     if (!response.ok) {

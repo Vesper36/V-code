@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { adminLogin } from '@/lib/auth/admin';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Shield } from 'lucide-react';
 
@@ -15,13 +16,14 @@ export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const result = await adminLogin(username, password);
+      const result = await adminLogin(username, password, rememberMe);
       if (result.success) {
         toast.success('Login successful');
         router.push('/admin/dashboard');
@@ -56,6 +58,10 @@ export default function AdminLoginPage() {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" required autoComplete="current-password" />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v) => setRememberMe(v === true)} />
+              <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">保持登录 (30天)</Label>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Logging in...' : 'Login'}

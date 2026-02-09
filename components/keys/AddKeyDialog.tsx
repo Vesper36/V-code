@@ -26,20 +26,16 @@ export function AddKeyDialog({ onAdd }: AddKeyDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [key, setKey] = useState('');
-  const [baseUrl, setBaseUrl] = useState('');
-  const [platform, setPlatform] = useState('');
   const t = useTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !key || !baseUrl || !platform) return;
+    if (!key) return;
 
     const newKey: APIKey = {
       id: uuidv4(),
-      name,
+      name: name || `Key-${Date.now().toString(36)}`,
       key,
-      baseUrl,
-      platform,
       createdAt: Date.now(),
     };
 
@@ -51,8 +47,6 @@ export function AddKeyDialog({ onAdd }: AddKeyDialogProps) {
   const resetForm = () => {
     setName('');
     setKey('');
-    setBaseUrl('');
-    setPlatform('');
   };
 
   return (
@@ -72,19 +66,6 @@ export function AddKeyDialog({ onAdd }: AddKeyDialogProps) {
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                {t.keys.dialog.name}
-              </Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t.keys.dialog.placeholderName}
-                className="col-span-3"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="key" className="text-right">
                 {t.keys.dialog.key}
               </Label>
@@ -99,29 +80,15 @@ export function AddKeyDialog({ onAdd }: AddKeyDialogProps) {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="baseUrl" className="text-right">
-                Base URL
+              <Label htmlFor="name" className="text-right">
+                {t.keys.dialog.name}
               </Label>
               <Input
-                id="baseUrl"
-                value={baseUrl}
-                onChange={(e) => setBaseUrl(e.target.value)}
-                placeholder="https://api.example.com"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t.keys.dialog.placeholderName}
                 className="col-span-3"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="platform" className="text-right">
-                Platform
-              </Label>
-              <Input
-                id="platform"
-                value={platform}
-                onChange={(e) => setPlatform(e.target.value)}
-                placeholder="OpenAI / Claude / etc"
-                className="col-span-3"
-                required
               />
             </div>
           </div>

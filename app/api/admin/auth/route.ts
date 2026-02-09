@@ -24,7 +24,7 @@ function hashToken(token: string): string {
 // POST: login
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const { username, password, rememberMe } = await request.json();
 
     // Server-side only env vars (no NEXT_PUBLIC_ prefix)
     const adminUser = process.env.ADMIN_USERNAME || 'admin';
@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
 
     const token = generateToken();
     const hashedToken = hashToken(token);
-    const expires = Date.now() + 24 * 60 * 60 * 1000;
+    const ttl = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+    const expires = Date.now() + ttl;
 
     const sessions = getSessionMap();
     sessions.set(hashedToken, { username, expires });
@@ -52,11 +53,12 @@ export async function POST(request: NextRequest) {
     }
 
     const response = NextResponse.json({ success: true, username });
+    const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
     response.cookies.set('admin_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60,
+      maxAge,
       path: '/',
     });
 
