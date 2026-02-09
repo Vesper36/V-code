@@ -10,7 +10,7 @@ export interface LogItem {
 }
 
 export class NewAPIClient {
-  private static readonly BASE_URL = 'https://api-cli.proxy.vesper36.cc';
+  private static readonly BASE_URL = 'https://v-api.vesper36.top';
   private apiKey: string;
 
   constructor(apiKey: string) {

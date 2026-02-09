@@ -14,3 +14,15 @@ export const useTranslation = () => {
   const currentLang = language || 'zh';
   return translations[currentLang];
 };
+
+// Hook to get and set language
+export const useI18n = () => {
+  const language = useStore((state) => state.settings.language) || 'zh';
+  const updateSettings = useStore((state) => state.updateSettings);
+
+  const setLanguage = (lang: Language) => {
+    updateSettings({ language: lang });
+  };
+
+  return { language, setLanguage };
+};

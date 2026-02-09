@@ -26,16 +26,20 @@ export function AddKeyDialog({ onAdd }: AddKeyDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [key, setKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [platform, setPlatform] = useState('');
   const t = useTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !key) return;
+    if (!name || !key || !baseUrl || !platform) return;
 
     const newKey: APIKey = {
       id: uuidv4(),
       name,
       key,
+      baseUrl,
+      platform,
       createdAt: Date.now(),
     };
 
@@ -47,6 +51,8 @@ export function AddKeyDialog({ onAdd }: AddKeyDialogProps) {
   const resetForm = () => {
     setName('');
     setKey('');
+    setBaseUrl('');
+    setPlatform('');
   };
 
   return (
@@ -90,6 +96,32 @@ export function AddKeyDialog({ onAdd }: AddKeyDialogProps) {
                 className="col-span-3"
                 required
                 type="password"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="baseUrl" className="text-right">
+                Base URL
+              </Label>
+              <Input
+                id="baseUrl"
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+                placeholder="https://api.example.com"
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="platform" className="text-right">
+                Platform
+              </Label>
+              <Input
+                id="platform"
+                value={platform}
+                onChange={(e) => setPlatform(e.target.value)}
+                placeholder="OpenAI / Claude / etc"
+                className="col-span-3"
+                required
               />
             </div>
           </div>

@@ -92,7 +92,7 @@ export default function TutorialPage() {
                   <CardContent className="pt-4">
                     <pre className="overflow-x-auto p-4">
                       <code className="text-sm text-zinc-50 font-mono leading-relaxed">
-{`curl https://api-cli.proxy.vesper36.cc/v1/chat/completions \\
+{`curl https://v-api.vesper36.top/v1/chat/completions \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer $OPENAI_API_KEY" \\
   -d '{
@@ -113,7 +113,7 @@ export default function TutorialPage() {
 
 client = OpenAI(
     api_key="sk-...",
-    base_url="https://api-cli.proxy.vesper36.cc/v1"
+    base_url="https://v-api.vesper36.top/v1"
 )
 
 response = client.chat.completions.create(
@@ -136,7 +136,7 @@ print(response.choices[0].message.content)`}
 
 const openai = new OpenAI({
   apiKey: 'sk-...',
-  baseURL: 'https://api-cli.proxy.vesper36.cc/v1',
+  baseURL: 'https://v-api.vesper36.top/v1',
 });
 
 const chatCompletion = await openai.chat.completions.create({

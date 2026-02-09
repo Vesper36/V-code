@@ -2,9 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
-import { Header } from '@/components/layout/Header';
-import { Sidebar, MobileNav } from '@/components/layout/Sidebar';
 import { Toaster } from "@/components/ui/sonner"
+import { LayoutWrapper } from '@/components/layout/LayoutWrapper';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,16 +26,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen flex flex-col bg-background">
-            <Header />
-            <div className="flex-1 flex flex-col md:flex-row">
-              <Sidebar />
-              <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-6 overflow-x-hidden">
-                {children}
-              </main>
-            </div>
-            <MobileNav />
-          </div>
+          <LayoutWrapper>{children}</LayoutWrapper>
           <Toaster />
         </ThemeProvider>
       </body>
