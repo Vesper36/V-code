@@ -13,7 +13,7 @@ export function Header() {
       <div className="container flex h-14 items-center justify-between px-6">
         <div className="flex items-center gap-2 font-bold text-xl">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-primary">V-AI</span>
+            <span className="text-primary">V-CODE</span>
             <span className="text-muted-foreground hidden sm:inline-block text-sm font-normal">API Dashboard</span>
           </Link>
         </div>
@@ -27,7 +27,7 @@ export function Header() {
             <span>文档</span>
           </Link>
           <Link
-            href="https://github.com/v-ai/v-ai"
+            href="https://github.com/Vesper36/V-code"
             target="_blank"
             rel="noreferrer"
             className="hidden sm:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mr-2"

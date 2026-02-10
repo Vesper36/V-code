@@ -60,11 +60,11 @@ function IntroSection() {
   return (
     <section id="introduction" className="space-y-4">
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className="text-primary border-primary">V-AI API</Badge>
+        <Badge variant="outline" className="text-primary border-primary">V-CODE API</Badge>
         <h2 className="scroll-m-20 text-3xl font-bold tracking-tight">简介</h2>
       </div>
       <p className="leading-7 text-muted-foreground text-lg">
-        V-AI 提供统一的接口来访问各种先进的 AI 模型。
+        V-CODE 提供统一的接口来访问各种先进的 AI 模型。
         我们的 API 完全兼容 OpenAI API 标准，您可以使用现有的客户端库和工具，
         只需进行少量配置更改即可接入。
       </p>
@@ -149,7 +149,7 @@ function PythonExample() {
           <code className="text-sm text-zinc-50 font-mono leading-relaxed">
 {`from openai import OpenAI
 
-# 初始化客户端，指向 V-AI 接口
+# 初始化客户端，指向 V-CODE 接口
 client = OpenAI(
     api_key="sk-...",
     base_url="https://v-api.vesper36.top/v1"
@@ -177,7 +177,7 @@ function NodeExample() {
           <code className="text-sm text-zinc-50 font-mono leading-relaxed">
 {`import OpenAI from 'openai';
 
-// 初始化客户端，指向 V-AI 接口
+// 初始化客户端，指向 V-CODE 接口
 const openai = new OpenAI({
   apiKey: 'sk-...',
   baseURL: 'https://v-api.vesper36.top/v1',

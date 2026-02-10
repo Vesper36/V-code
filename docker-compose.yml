@@ -1,21 +1,19 @@
-version: '3.8'
-
 services:
-  v-ai:
+  v-code:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: v-ai
+    container_name: v-code
     restart: unless-stopped
     ports:
-      - "8888:3000"
+      - "1291:3000"
     env_file:
       - .env.local
     environment:
       - NODE_ENV=production
     networks:
-      - v-ai-network
+      - v-code-network
 
 networks:
-  v-ai-network:
+  v-code-network:
     driver: bridge

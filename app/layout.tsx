@@ -8,7 +8,7 @@ import { LayoutWrapper } from '@/components/layout/LayoutWrapper';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'V-AI | API Key Dashboard',
+  title: 'V-CODE | API Key Dashboard',
   description: 'Visualize and manage your API usage',
 };
 

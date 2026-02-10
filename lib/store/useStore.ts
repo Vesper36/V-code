@@ -60,7 +60,7 @@ export const useStore = create<AppState>()(
         })),
     }),
     {
-      name: 'v-ai-storage',
+      name: 'v-code-storage',
       partialize: (state) => ({ keys: state.keys, settings: state.settings }),
     }
   )

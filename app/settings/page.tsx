@@ -32,7 +32,7 @@ export default function SettingsPage() {
   }
 
   const handleExportData = () => {
-    const storeData = localStorage.getItem('v-ai-storage');
+    const storeData = localStorage.getItem('v-code-storage');
     let keysData = '[]';
     if (storeData) {
       try {
@@ -51,7 +51,7 @@ export default function SettingsPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `v-ai-backup-${new Date().toISOString().split('T')[0]}.json`
+    a.download = `v-code-backup-${new Date().toISOString().split('T')[0]}.json`
     a.click()
     URL.revokeObjectURL(url)
   }

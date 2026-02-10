@@ -3,12 +3,12 @@
 # 部署脚本
 set -e
 
-echo "开始部署 v-ai 项目到 HZUS 服务器..."
+echo "开始部署 v-code 项目到 HZUS 服务器..."
 
 # 服务器配置
 SSH_HOST="HZ-US-code_deploy"
-DEPLOY_DIR="/var/www/v-ai"
-PROJECT_NAME="v-ai"
+DEPLOY_DIR="/var/www/v-code"
+PROJECT_NAME="v-code"
 
 # 1. 同步代码到服务器
 echo "步骤 1/5: 同步代码到服务器..."
@@ -34,4 +34,4 @@ echo "步骤 5/5: 清理未使用的 Docker 镜像..."
 ssh ${SSH_HOST} "docker image prune -f"
 
 echo "部署完成！"
-echo "访问地址: http://服务器IP:3000"
+echo "访问地址: https://v-code.vesper36.com"

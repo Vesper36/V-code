@@ -55,7 +55,7 @@ export const translations = {
     },
     tutorial: {
       title: "Tutorial",
-      subtitle: "Learn how to use V-AI.",
+      subtitle: "Learn how to use V-CODE.",
     },
   },
   zh: {
@@ -114,7 +114,7 @@ export const translations = {
     },
     tutorial: {
       title: "教程",
-      subtitle: "了解如何使用 V-AI。",
+      subtitle: "了解如何使用 V-CODE。",
     },
   },
 };

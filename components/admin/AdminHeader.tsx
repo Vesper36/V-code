@@ -60,7 +60,7 @@ export function AdminHeader() {
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
             <Shield className="h-5 w-5 text-primary" />
-            <span className="font-semibold">V-AI Admin</span>
+            <span className="font-semibold">V-CODE Admin</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground hidden sm:inline">
