@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { getAdminClient, AdminChannel } from '@/lib/api/admin';
 import {
-  RefreshCw, Loader2, Search, Plus, Trash2, Power, Zap,
+  RefreshCw, Loader2, Search, Plus, Trash2, Power, Zap, Pencil,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -42,8 +42,6 @@ const CHANNEL_TYPES: Record<number, string> = {
   999: 'Custom',
 };
 
-// PLACEHOLDER_CHANNELS_PAGE_CONTINUE
-
 export default function AdminChannelsPage() {
   const [channels, setChannels] = useState<AdminChannel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,6 +51,9 @@ export default function AdminChannelsPage() {
   const [total, setTotal] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editingChannel, setEditingChannel] = useState<AdminChannel | null>(null);
   const [testingId, setTestingId] = useState<number | null>(null);
   const perPage = 20;
 
@@ -85,8 +86,6 @@ export default function AdminChannelsPage() {
   useEffect(() => {
     fetchChannels();
   }, [fetchChannels]);
-
-// PLACEHOLDER_CHANNELS_HANDLERS
 
   const handleToggleStatus = async (ch: AdminChannel) => {
     const newStatus = ch.status === 1 ? 2 : 1;
@@ -168,14 +167,53 @@ export default function AdminChannelsPage() {
     setFormBaseUrl(''); setFormModels(''); setFormPriority('0'); setFormWeight('1');
   };
 
+  const openEdit = (ch: AdminChannel) => {
+    setEditingChannel(ch);
+    setFormName(ch.name);
+    setFormType(String(ch.type));
+    setFormKey(ch.key || '');
+    setFormBaseUrl('');
+    setFormModels(Array.isArray(ch.models) ? ch.models.join(',') : '');
+    setFormPriority(String(ch.priority || 0));
+    setFormWeight(String(ch.weight || 1));
+    setEditOpen(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingChannel || !formName.trim() || !formModels.trim()) {
+      toast.error('名称和模型为必填项');
+      return;
+    }
+    setEditLoading(true);
+    try {
+      const client = getAdminClient();
+      await client.updateChannel(editingChannel.id, {
+        name: formName.trim(),
+        type: parseInt(formType),
+        key: formKey.trim() || undefined,
+        models: formModels.trim().split(',') as any,
+        priority: parseInt(formPriority) || 0,
+        weight: parseInt(formWeight) || 1,
+      });
+      toast.success('渠道已更新');
+      setEditOpen(false);
+      setEditingChannel(null);
+      resetForm();
+      fetchChannels(true);
+    } catch (error: any) {
+      toast.error(error.message || '更新渠道失败');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const filteredChannels = search
     ? channels.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
     : channels;
 
   const totalPages = Math.ceil(total / perPage);
   const getTypeName = (type: number) => CHANNEL_TYPES[type] || `Type ${type}`;
-
-// PLACEHOLDER_CHANNELS_RENDER
 
   return (
     <AdminLayout>
@@ -254,6 +292,9 @@ export default function AdminChannelsPage() {
                             </td>
                             <td className="p-3 text-right">
                               <div className="flex items-center justify-end gap-1">
+                                <Button variant="ghost" size="icon" onClick={() => openEdit(ch)} title="编辑渠道">
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
                                 <Button variant="ghost" size="icon" onClick={() => handleTest(ch)} disabled={testingId === ch.id} title="测试渠道">
                                   {testingId === ch.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
                                 </Button>
@@ -272,7 +313,7 @@ export default function AdminChannelsPage() {
                   </div>
                   {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                      <p className="text-sm text-muted-foreground">Page {page} / {totalPages}</p>
+                      <p className="text-sm text-muted-foreground">第 {page} / {totalPages} 页</p>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
                           <ChevronLeft className="h-4 w-4 mr-1" /> 上一页
@@ -339,6 +380,57 @@ export default function AdminChannelsPage() {
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={createLoading}>取消</Button>
                 <Button type="submit" disabled={createLoading}>{createLoading ? '创建中...' : '创建'}</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={editOpen} onOpenChange={(open) => { setEditOpen(open); if (!open) { setEditingChannel(null); resetForm(); } }}>
+          <DialogContent className="sm:max-w-[550px] glass border-white/20">
+            <DialogHeader>
+              <DialogTitle>编辑渠道</DialogTitle>
+              <DialogDescription>修改渠道 #{editingChannel?.id} 的配置</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleEdit}>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label>名称 *</Label>
+                  <Input value={formName} onChange={(e) => setFormName(e.target.value)} required />
+                </div>
+                <div className="grid gap-2">
+                  <Label>类型 *</Label>
+                  <Select value={formType} onValueChange={setFormType}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(CHANNEL_TYPES).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>API 密钥</Label>
+                  <Input value={formKey} onChange={(e) => setFormKey(e.target.value)} placeholder="留空则不修改" />
+                </div>
+                <div className="grid gap-2">
+                  <Label>模型 *</Label>
+                  <Input value={formModels} onChange={(e) => setFormModels(e.target.value)} required />
+                  <p className="text-xs text-muted-foreground">多个模型用逗号分隔</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>优先级</Label>
+                    <Input type="number" value={formPriority} onChange={(e) => setFormPriority(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>权重</Label>
+                    <Input type="number" min="1" value={formWeight} onChange={(e) => setFormWeight(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditOpen(false)} disabled={editLoading}>取消</Button>
+                <Button type="submit" disabled={editLoading}>{editLoading ? '保存中...' : '保存'}</Button>
               </DialogFooter>
             </form>
           </DialogContent>

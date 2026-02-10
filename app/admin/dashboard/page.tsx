@@ -274,7 +274,7 @@ export default function AdminDashboardPage() {
         <Card className="glass">
           <CardHeader>
             <CardTitle>最近活动</CardTitle>
-            <CardDescription>Latest API request logs</CardDescription>
+            <CardDescription>最近的 API 请求日志</CardDescription>
           </CardHeader>
           <CardContent>
             {recentLogs.length === 0 ? (

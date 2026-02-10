@@ -60,8 +60,7 @@ async function handleRequest(request: NextRequest, method: string) {
 
   try {
     const path = request.nextUrl.searchParams.get('path');
-    const baseUrl = 'https://v-api.vesper36.top';
-    // Use server-side env var (no NEXT_PUBLIC_ prefix)
+    const baseUrl = process.env.NEW_API_BASE_URL || 'https://v-api.vesper36.top';
     const adminApiKey = process.env.ADMIN_API_KEY || '';
 
     if (!path) {

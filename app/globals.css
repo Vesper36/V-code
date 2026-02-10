@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@plugin "@tailwindcss/typography";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -139,3 +141,45 @@
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* ===== Tiptap Editor Styles ===== */
+.tiptap .hljs {
+  background: oklch(0.205 0 0);
+  color: #abb2bf;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.tiptap .hljs-keyword,
+.tiptap .hljs-selector-tag,
+.tiptap .hljs-literal,
+.tiptap .hljs-section,
+.tiptap .hljs-link { color: #c678dd; }
+
+.tiptap .hljs-string,
+.tiptap .hljs-title,
+.tiptap .hljs-name,
+.tiptap .hljs-type,
+.tiptap .hljs-attribute,
+.tiptap .hljs-symbol,
+.tiptap .hljs-bullet,
+.tiptap .hljs-addition,
+.tiptap .hljs-variable,
+.tiptap .hljs-template-tag,
+.tiptap .hljs-template-variable { color: #e06c75; }
+
+.tiptap .hljs-comment,
+.tiptap .hljs-quote,
+.tiptap .hljs-deletion,
+.tiptap .hljs-meta { color: #5c6370; font-style: italic; }
+
+.tiptap .hljs-number,
+.tiptap .hljs-regexp,
+.tiptap .hljs-literal,
+.tiptap .hljs-built_in { color: #d19a66; }
+
+.tiptap .hljs-attr,
+.tiptap .hljs-tag { color: #e06c75; }
+
+.tiptap .hljs-function { color: #61afef; }
