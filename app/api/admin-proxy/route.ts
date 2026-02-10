@@ -95,9 +95,13 @@ async function handleRequest(request: NextRequest, method: string) {
     }
 
     const response = await fetch(url, options);
-    const data = await response.json();
-
-    return NextResponse.json(data, { status: response.status });
+    const text = await response.text();
+    try {
+      const data = JSON.parse(text);
+      return NextResponse.json(data, { status: response.status });
+    } catch {
+      return new NextResponse(text, { status: response.status });
+    }
   } catch (error) {
     console.error('Admin proxy error:', error);
     return NextResponse.json(

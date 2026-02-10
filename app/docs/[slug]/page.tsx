@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, notFound } from 'next/navigation'
+import { useParams } from 'next/navigation'
+import Link from 'next/link'
 import { DocsLayout } from '@/components/docs/DocsLayout'
 import { MarkdownRenderer } from '@/components/docs/MarkdownRenderer'
 import { DocTOC } from '@/components/docs/DocTOC'
@@ -38,7 +39,19 @@ export default function DocDetailPage() {
       .finally(() => setLoading(false))
   }, [slug])
 
-  if (notFoundState) return notFound()
+  if (notFoundState) {
+    return (
+      <DocsLayout>
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <h1 className="text-4xl font-bold">404</h1>
+          <p className="text-muted-foreground">文档不存在或已被移除</p>
+          <Link href="/docs" className="text-primary hover:underline text-sm">
+            返回文档中心
+          </Link>
+        </div>
+      </DocsLayout>
+    )
+  }
 
   if (loading) {
     return (

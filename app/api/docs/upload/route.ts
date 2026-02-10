@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdmin, unauthorizedResponse } from '@/lib/api/docs-auth'
 import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import { randomBytes } from 'crypto'
 
 export async function POST(request: NextRequest) {
@@ -15,23 +15,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Invalid file type' }, { status: 400 })
+    const mimeToExt: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/gif': 'gif',
+      'image/webp': 'webp',
+    }
+
+    const ext = mimeToExt[file.type]
+    if (!ext) {
+      return NextResponse.json({ error: 'Invalid file type. Allowed: jpg, png, gif, webp' }, { status: 400 })
     }
 
     if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json({ error: 'File too large (max 5MB)' }, { status: 400 })
     }
 
-    const ext = file.name.split('.').pop() || 'png'
     const filename = `${randomBytes(16).toString('hex')}.${ext}`
     const uploadDir = join(process.cwd(), 'public', 'uploads', 'docs')
 
     await mkdir(uploadDir, { recursive: true })
 
+    const finalPath = resolve(uploadDir, filename)
+    if (!finalPath.startsWith(resolve(uploadDir))) {
+      return NextResponse.json({ error: 'Invalid filename' }, { status: 400 })
+    }
+
     const bytes = await file.arrayBuffer()
-    await writeFile(join(uploadDir, filename), Buffer.from(bytes))
+    await writeFile(finalPath, Buffer.from(bytes))
 
     const url = `/uploads/docs/${filename}`
     return NextResponse.json({ url })

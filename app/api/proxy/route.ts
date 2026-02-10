@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const API_BASE_URL = process.env.NEW_API_BASE_URL || 'https://v-api.vesper36.top';
+
 async function handleRequest(request: NextRequest, method: string) {
   const authHeader = request.headers.get('authorization');
-  const baseUrl = request.headers.get('x-base-url');
   const path = request.nextUrl.searchParams.get('path');
 
-  if (!authHeader || !baseUrl || !path) {
+  if (!authHeader || !path) {
     return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+  }
+
+  if (!path.startsWith('/')) {
+    return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
   }
 
   try {
@@ -16,6 +21,7 @@ async function handleRequest(request: NextRequest, method: string) {
         'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
+      signal: AbortSignal.timeout(30000),
     };
 
     if (method !== 'GET' && method !== 'DELETE') {
@@ -25,7 +31,7 @@ async function handleRequest(request: NextRequest, method: string) {
       }
     }
 
-    const response = await fetch(`${baseUrl}${path}`, fetchOptions);
+    const response = await fetch(`${API_BASE_URL}${path}`, fetchOptions);
 
     const text = await response.text();
     try {

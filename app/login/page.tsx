@@ -57,11 +57,12 @@ export default function LoginPage() {
             <Label htmlFor="apiKey">API Key</Label>
             <Input
               id="apiKey"
-              type="text"
+              type="password"
               placeholder="sk-xxxxxxxxxxxxxxxx"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               disabled={isLoading}
+              autoComplete="off"
               className="font-mono"
             />
           </div>

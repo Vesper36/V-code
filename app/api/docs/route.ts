@@ -6,12 +6,14 @@ import { DocStatus } from '@prisma/client'
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
 
+  const isAdmin = verifyAdmin(request)
+
   // Single doc by slug
   const slug = searchParams.get('slug')
   if (slug) {
     try {
       const doc = await getDocumentBySlug(slug)
-      if (!doc) {
+      if (!doc || (!isAdmin && doc.status !== 'published')) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 })
       }
       incrementViewCount(doc.id).catch(() => {})
@@ -23,17 +25,26 @@ export async function GET(request: NextRequest) {
   }
 
   // List docs
-  const page = parseInt(searchParams.get('page') || '1')
-  const perPage = parseInt(searchParams.get('perPage') || '20')
-  const status = searchParams.get('status') as DocStatus | null
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1)
+  const perPage = Math.min(50, Math.max(1, parseInt(searchParams.get('perPage') || '20') || 20))
+  const statusParam = searchParams.get('status') as DocStatus | null
   const categoryId = searchParams.get('categoryId')
   const search = searchParams.get('search') || undefined
+
+  // Anonymous users can only see published documents
+  const validStatuses: string[] = ['draft', 'published', 'archived']
+  let status: DocStatus | undefined
+  if (isAdmin && statusParam && validStatuses.includes(statusParam)) {
+    status = statusParam as DocStatus
+  } else if (!isAdmin) {
+    status = 'published' as DocStatus
+  }
 
   try {
     const result = await getDocuments({
       page,
       perPage,
-      status: status || undefined,
+      status,
       categoryId: categoryId ? parseInt(categoryId) : undefined,
       search,
     })

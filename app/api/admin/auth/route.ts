@@ -27,8 +27,16 @@ export async function POST(request: NextRequest) {
     const { username, password, rememberMe } = await request.json();
 
     // Server-side only env vars (no NEXT_PUBLIC_ prefix)
-    const adminUser = process.env.ADMIN_USERNAME || 'admin';
-    const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+    const adminUser = process.env.ADMIN_USERNAME;
+    const adminPass = process.env.ADMIN_PASSWORD;
+
+    if (!adminUser || !adminPass) {
+      console.error('ADMIN_USERNAME or ADMIN_PASSWORD not configured');
+      return NextResponse.json(
+        { error: 'Admin credentials not configured on server' },
+        { status: 503 }
+      );
+    }
 
     if (username !== adminUser || password !== adminPass) {
       return NextResponse.json(

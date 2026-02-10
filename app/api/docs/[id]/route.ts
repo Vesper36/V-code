@@ -4,7 +4,9 @@ import { getDocumentById, updateDocument, deleteDocument } from '@/lib/db/docs'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  if (!verifyAdmin(request)) return unauthorizedResponse()
+
   const { id } = await params
   const docId = parseInt(id)
   if (isNaN(docId)) {

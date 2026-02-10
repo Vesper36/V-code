@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env*
+.next
+.ace-tool
+.claude
+node_modules
+*.md
+!README.md
+public/uploads
+deploy.sh
+docker-compose.yml
+.DS_Store

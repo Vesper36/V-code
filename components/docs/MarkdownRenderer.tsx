@@ -3,11 +3,28 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import { CodeBlock } from './CodeBlock'
 import { Callout } from './Callout'
 import type { Components } from 'react-markdown'
+
+const sanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    div: [...(defaultSchema.attributes?.div || []), 'data-callout', 'data-callout-type', 'className'],
+    code: [...(defaultSchema.attributes?.code || []), 'className'],
+    img: [...(defaultSchema.attributes?.img || []), 'src', 'alt', 'loading'],
+    a: [...(defaultSchema.attributes?.a || []), 'href', 'target', 'rel'],
+    span: [...(defaultSchema.attributes?.span || []), 'className', 'style'],
+  },
+  tagNames: [
+    ...(defaultSchema.tagNames || []),
+    'div', 'details', 'summary',
+  ],
+}
 
 interface MarkdownRendererProps {
   content: string
@@ -95,7 +112,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
     <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, rehypeSlug, [rehypeAutolinkHeadings, { behavior: 'wrap' }]]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], rehypeSlug, [rehypeAutolinkHeadings, { behavior: 'wrap' }]]}
         components={components}
       >
         {content}

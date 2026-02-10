@@ -10,7 +10,6 @@ export interface LogItem {
 }
 
 export class NewAPIClient {
-  private static readonly BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://v-api.vesper36.top';
   private apiKey: string;
 
   constructor(apiKey: string) {
@@ -22,7 +21,6 @@ export class NewAPIClient {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${this.apiKey}`,
-        'x-base-url': NewAPIClient.BASE_URL,
       },
     });
 
