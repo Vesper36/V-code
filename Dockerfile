@@ -7,7 +7,10 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
 RUN corepack enable pnpm && pnpm i --frozen-lockfile
+RUN npx prisma generate
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -37,6 +40,10 @@ COPY --from=builder /app/public ./public
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
+
+# Create uploads directory
+RUN mkdir -p public/uploads/docs
+RUN chown -R nextjs:nodejs public/uploads
 
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

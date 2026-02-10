@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, Sun, Moon, Settings, Github } from 'lucide-react';
+import { Menu, Sun, Moon, Settings, Github, BookOpen } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,13 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/docs"
+            className="hidden sm:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mr-2"
+          >
+            <BookOpen className="h-5 w-5" />
+            <span>文档</span>
+          </Link>
           <Link
             href="https://github.com/v-ai/v-ai"
             target="_blank"

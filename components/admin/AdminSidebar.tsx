@@ -10,7 +10,8 @@ import {
   BarChart3,
   Settings,
   FileText,
-  Radio
+  Radio,
+  BookOpen
 } from 'lucide-react';
 
 export function AdminSidebar() {
@@ -21,6 +22,7 @@ export function AdminSidebar() {
     { href: '/admin/keys', label: '密钥管理', icon: Key },
     { href: '/admin/users', label: '用户管理', icon: Users },
     { href: '/admin/channels', label: '渠道管理', icon: Radio },
+    { href: '/admin/docs', label: '文档管理', icon: BookOpen },
     { href: '/admin/analytics', label: '数据分析', icon: BarChart3 },
     { href: '/admin/logs', label: '系统日志', icon: FileText },
     { href: '/admin/settings', label: '系统设置', icon: Settings },
@@ -31,7 +33,7 @@ export function AdminSidebar() {
       <nav className="grid items-start px-2 text-sm font-medium lg:px-4 py-4 gap-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link
               key={item.href}
