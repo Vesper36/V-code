@@ -110,11 +110,9 @@ export default function Dashboard() {
     );
   }
 
-  // Helper to format currency
   const formatCurrency = (val: number | undefined) => {
       if (val === undefined) return '$0.00';
-      const usd = val / 500000;
-      return `$${usd.toFixed(4)}`;
+      return `$${val.toFixed(4)}`;
   };
 
   return (

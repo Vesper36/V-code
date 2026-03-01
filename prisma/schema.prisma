@@ -55,3 +55,88 @@ enum DocStatus {
   published
   archived
 }
+
+// ========== Gateway Models ==========
+
+model Source {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  baseUrl   String   @map("base_url") @db.VarChar(500)
+  apiKey    String   @map("api_key") @db.VarChar(500)
+  models    Json     @default("[]")
+  priority  Int      @default(0)
+  weight    Int      @default(1)
+  status    Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  logs RequestLog[]
+
+  @@map("sources")
+}
+
+model ModelConfig {
+  id          Int      @id @default(autoincrement())
+  modelId     String   @unique @map("model_id") @db.VarChar(100)
+  displayName String   @map("display_name") @db.VarChar(100)
+  inputPrice  Decimal  @default(0) @map("input_price") @db.Decimal(12, 6)
+  outputPrice Decimal  @default(0) @map("output_price") @db.Decimal(12, 6)
+  rpm         Int      @default(60)
+  tpm         Int      @default(100000)
+  status      Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("model_configs")
+}
+
+model ApiKey {
+  id             Int       @id @default(autoincrement())
+  name           String    @db.VarChar(100)
+  key            String    @unique @db.VarChar(100)
+  status         Int       @default(1)
+  allowedModels  Json      @default("[]") @map("allowed_models")
+  totalQuota     Decimal   @default(0) @map("total_quota") @db.Decimal(12, 6)
+  usedQuota      Decimal   @default(0) @map("used_quota") @db.Decimal(12, 6)
+  dailyQuota     Decimal?  @map("daily_quota") @db.Decimal(12, 6)
+  dailyUsed      Decimal   @default(0) @map("daily_used") @db.Decimal(12, 6)
+  dailyResetAt   DateTime? @map("daily_reset_at")
+  monthlyQuota   Decimal?  @map("monthly_quota") @db.Decimal(12, 6)
+  monthlyUsed    Decimal   @default(0) @map("monthly_used") @db.Decimal(12, 6)
+  monthlyResetAt DateTime? @map("monthly_reset_at")
+  rpm            Int       @default(60)
+  tpm            Int       @default(100000)
+  expiredAt      DateTime? @map("expired_at")
+  lastUsedAt     DateTime? @map("last_used_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  logs RequestLog[]
+
+  @@map("api_keys")
+}
+
+model RequestLog {
+  id               Int      @id @default(autoincrement())
+  apiKeyId         Int      @map("api_key_id")
+  keyName          String   @map("key_name") @db.VarChar(100)
+  modelId          String   @map("model_id") @db.VarChar(100)
+  sourceId         Int?     @map("source_id")
+  promptTokens     Int      @default(0) @map("prompt_tokens")
+  completionTokens Int      @default(0) @map("completion_tokens")
+  totalTokens      Int      @default(0) @map("total_tokens")
+  cost             Decimal  @default(0) @db.Decimal(12, 6)
+  latencyMs        Int      @default(0) @map("latency_ms")
+  statusCode       Int      @default(200) @map("status_code")
+  isStream         Boolean  @default(false) @map("is_stream")
+  errorMsg         String?  @map("error_msg") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  apiKey ApiKey  @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  source Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([apiKeyId], map: "idx_api_key")
+  @@index([modelId], map: "idx_model")
+  @@index([createdAt], map: "idx_created")
+  @@map("request_logs")
+}

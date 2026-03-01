@@ -6,12 +6,15 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
   Key,
-  Users,
+
   BarChart3,
   Settings,
   FileText,
   Radio,
-  BookOpen
+  BookOpen,
+  Bot,
+  FileCode,
+  Globe,
 } from 'lucide-react';
 
 export function AdminSidebar() {
@@ -20,11 +23,13 @@ export function AdminSidebar() {
   const navItems = [
     { href: '/admin/dashboard', label: '仪表盘', icon: LayoutDashboard },
     { href: '/admin/keys', label: '密钥管理', icon: Key },
-    { href: '/admin/users', label: '用户管理', icon: Users },
-    { href: '/admin/channels', label: '渠道管理', icon: Radio },
+    { href: '/admin/channels', label: '上游源管理', icon: Radio },
+    { href: '/admin/models', label: '模型管理', icon: Bot },
     { href: '/admin/docs', label: '文档管理', icon: BookOpen },
     { href: '/admin/analytics', label: '数据分析', icon: BarChart3 },
     { href: '/admin/logs', label: '系统日志', icon: FileText },
+    { href: '/admin/api-docs', label: 'API 文档', icon: FileCode },
+    { href: '/admin/domains', label: '域名管理', icon: Globe },
     { href: '/admin/settings', label: '系统设置', icon: Settings },
   ];
 

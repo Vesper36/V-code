@@ -11,12 +11,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   RefreshCw, Loader2, TrendingUp, BarChart3, PieChart as PieChartIcon,
 } from 'lucide-react';
-import { getAdminClient, AdminLogItem } from '@/lib/api/admin';
+import {
+  getUsageTrend, getModelDistribution, getKeyUsage,
+  type TrendItem, type ModelDistItem, type KeyUsageItem,
+} from '@/lib/api/gateway-admin';
 import { toast } from 'sonner';
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid,
   Cell, Pie, PieChart,
-  ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
+  ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
 
 const COLORS = [
@@ -24,32 +27,11 @@ const COLORS = [
   '#ec4899', '#6366f1', '#14b8a6', '#f97316', '#84cc16',
 ];
 
-interface TrendItem {
-  date: string;
-  requests: number;
-  quota: number;
-  tokens: number;
-}
-
-interface ModelItem {
-  model: string;
-  requests: number;
-  quota: number;
-  tokens: number;
-}
-
-interface UserUsageItem {
-  username: string;
-  requests: number;
-  quota: number;
-  tokens: number;
-}
-
 export default function AdminAnalyticsPage() {
   const [days, setDays] = useState('7');
   const [trend, setTrend] = useState<TrendItem[]>([]);
-  const [models, setModels] = useState<ModelItem[]>([]);
-  const [userUsage, setUserUsage] = useState<UserUsageItem[]>([]);
+  const [models, setModels] = useState<ModelDistItem[]>([]);
+  const [keyUsage, setKeyUsage] = useState<KeyUsageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -58,34 +40,14 @@ export default function AdminAnalyticsPage() {
     else setLoading(true);
 
     try {
-      const client = getAdminClient();
-      const numDays = parseInt(days);
-
-      const [trendData, modelData, logsData] = await Promise.all([
-        client.getUsageTrend(numDays),
-        client.getModelDistribution(),
-        client.getLogs(1, 100),
+      const [trendData, modelData, keyData] = await Promise.all([
+        getUsageTrend(parseInt(days)),
+        getModelDistribution(),
+        getKeyUsage(),
       ]);
-
       setTrend(trendData);
-      setModels(modelData);
-
-      // Aggregate user usage from logs
-      const userMap = new Map<string, UserUsageItem>();
-      for (const log of logsData.data) {
-        if (log.type !== 2 || !log.username) continue;
-        if (!userMap.has(log.username)) {
-          userMap.set(log.username, { username: log.username, requests: 0, quota: 0, tokens: 0 });
-        }
-        const entry = userMap.get(log.username)!;
-        entry.requests++;
-        entry.quota += log.quota;
-        entry.tokens += (log.prompt_tokens || 0) + (log.completion_tokens || 0);
-      }
-      setUserUsage(
-        Array.from(userMap.values()).sort((a, b) => b.requests - a.requests)
-      );
-
+      setModels(modelData.slice(0, 10));
+      setKeyUsage(keyData.slice(0, 10));
       if (isRefresh) toast.success('分析数据已刷新');
     } catch (error: any) {
       toast.error(error.message || '加载分析数据失败');
@@ -95,21 +57,17 @@ export default function AdminAnalyticsPage() {
     }
   }, [days]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const fmtQuota = (q: number) => `$${(q / 500000).toFixed(4)}`;
-  const fmtQuotaShort = (q: number) => {
-    const usd = q / 500000;
-    if (usd >= 1000) return `$${(usd / 1000).toFixed(1)}k`;
-    if (usd >= 1) return `$${usd.toFixed(2)}`;
-    return `$${usd.toFixed(4)}`;
+  const fmtCost = (c: number) => `$${c.toFixed(4)}`;
+  const fmtCostShort = (c: number) => {
+    if (c >= 1000) return `$${(c / 1000).toFixed(1)}k`;
+    if (c >= 1) return `$${c.toFixed(2)}`;
+    return `$${c.toFixed(4)}`;
   };
 
-  // Summary stats
   const totalRequests = trend.reduce((s, t) => s + t.requests, 0);
-  const totalQuota = trend.reduce((s, t) => s + t.quota, 0);
+  const totalCost = trend.reduce((s, t) => s + t.cost, 0);
   const totalTokens = trend.reduce((s, t) => s + t.tokens, 0);
 
   if (loading) {
@@ -134,9 +92,9 @@ export default function AdminAnalyticsPage() {
 
         <SummaryCards
           totalRequests={totalRequests}
-          totalQuota={totalQuota}
+          totalCost={totalCost}
           totalTokens={totalTokens}
-          fmtQuota={fmtQuotaShort}
+          fmtCost={fmtCostShort}
         />
 
         <Tabs defaultValue="trend" className="space-y-4">
@@ -147,21 +105,19 @@ export default function AdminAnalyticsPage() {
             <TabsTrigger value="models" className="gap-2">
               <BarChart3 className="h-4 w-4" /> 模型
             </TabsTrigger>
-            <TabsTrigger value="users" className="gap-2">
-              <PieChartIcon className="h-4 w-4" /> 用户
+            <TabsTrigger value="keys" className="gap-2">
+              <PieChartIcon className="h-4 w-4" /> 密钥
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="trend">
-            <TrendChart data={trend} fmtQuotaShort={fmtQuotaShort} fmtQuota={fmtQuota} />
+            <TrendChart data={trend} fmtCostShort={fmtCostShort} fmtCost={fmtCost} />
           </TabsContent>
-
           <TabsContent value="models">
-            <ModelsChart data={models} fmtQuota={fmtQuota} />
+            <ModelsChart data={models} fmtCost={fmtCost} />
           </TabsContent>
-
-          <TabsContent value="users">
-            <UsersChart data={userUsage} fmtQuota={fmtQuota} />
+          <TabsContent value="keys">
+            <KeysChart data={keyUsage} fmtCost={fmtCost} />
           </TabsContent>
         </Tabs>
       </div>
@@ -181,9 +137,7 @@ function AnalyticsHeader({ days, onDaysChange, refreshing, onRefresh }: {
     <div className="flex items-center justify-between">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">数据分析</h1>
-        <p className="text-muted-foreground">
-          使用统计与消耗分析
-        </p>
+        <p className="text-muted-foreground">使用统计与消耗分析</p>
       </div>
       <div className="flex items-center gap-2">
         <Select value={days} onValueChange={onDaysChange}>
@@ -197,26 +151,22 @@ function AnalyticsHeader({ days, onDaysChange, refreshing, onRefresh }: {
           </SelectContent>
         </Select>
         <Button variant="outline" size="icon" onClick={onRefresh} disabled={refreshing}>
-          {refreshing ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
+          {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
         </Button>
       </div>
     </div>
   );
 }
 
-function SummaryCards({ totalRequests, totalQuota, totalTokens, fmtQuota }: {
+function SummaryCards({ totalRequests, totalCost, totalTokens, fmtCost }: {
   totalRequests: number;
-  totalQuota: number;
+  totalCost: number;
   totalTokens: number;
-  fmtQuota: (q: number) => string;
+  fmtCost: (c: number) => string;
 }) {
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      <Card className="glass">
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">总请求数</CardTitle>
         </CardHeader>
@@ -224,15 +174,15 @@ function SummaryCards({ totalRequests, totalQuota, totalTokens, fmtQuota }: {
           <div className="text-2xl font-bold">{totalRequests.toLocaleString()}</div>
         </CardContent>
       </Card>
-      <Card className="glass">
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">总消耗</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{fmtQuota(totalQuota)}</div>
+          <div className="text-2xl font-bold">{fmtCost(totalCost)}</div>
         </CardContent>
       </Card>
-      <Card className="glass">
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">总令牌数</CardTitle>
         </CardHeader>
@@ -244,14 +194,14 @@ function SummaryCards({ totalRequests, totalQuota, totalTokens, fmtQuota }: {
   );
 }
 
-function TrendChart({ data, fmtQuotaShort, fmtQuota }: {
+function TrendChart({ data, fmtCostShort, fmtCost }: {
   data: TrendItem[];
-  fmtQuotaShort: (q: number) => string;
-  fmtQuota: (q: number) => string;
+  fmtCostShort: (c: number) => string;
+  fmtCost: (c: number) => string;
 }) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="glass">
+      <Card>
         <CardHeader>
           <CardTitle>请求趋势</CardTitle>
           <CardDescription>每日 API 请求量</CardDescription>
@@ -275,25 +225,25 @@ function TrendChart({ data, fmtQuotaShort, fmtQuota }: {
         </CardContent>
       </Card>
 
-      <Card className="glass">
+      <Card>
         <CardHeader>
           <CardTitle>消耗趋势</CardTitle>
-          <CardDescription>每日额度消耗</CardDescription>
+          <CardDescription>每日费用消耗</CardDescription>
         </CardHeader>
         <CardContent className="pl-2">
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={data}>
               <defs>
-                <linearGradient id="analyticsQuota" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="analyticsCost" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" stroke="#888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => v.slice(5)} />
-              <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => fmtQuotaShort(v)} />
-              <Tooltip formatter={(value) => [fmtQuota(Number(value ?? 0)), '额度']} labelFormatter={(l) => `日期: ${l}`} />
+              <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => fmtCostShort(v)} />
+              <Tooltip formatter={(value) => [fmtCost(Number(value ?? 0)), '费用']} labelFormatter={(l) => `日期: ${l}`} />
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <Area type="monotone" dataKey="quota" stroke="#06b6d4" fillOpacity={1} fill="url(#analyticsQuota)" name="额度" />
+              <Area type="monotone" dataKey="cost" stroke="#06b6d4" fillOpacity={1} fill="url(#analyticsCost)" name="费用" />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
@@ -302,36 +252,30 @@ function TrendChart({ data, fmtQuotaShort, fmtQuota }: {
   );
 }
 
-function ModelsChart({ data, fmtQuota }: {
-  data: ModelItem[];
-  fmtQuota: (q: number) => string;
+function ModelsChart({ data, fmtCost }: {
+  data: ModelDistItem[];
+  fmtCost: (c: number) => string;
 }) {
-  const top10 = data.slice(0, 10);
-
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="glass">
+      <Card>
         <CardHeader>
           <CardTitle>模型请求量</CardTitle>
           <CardDescription>按模型统计的请求数</CardDescription>
         </CardHeader>
         <CardContent className="pl-2">
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart layout="vertical" data={top10} margin={{ left: 20, right: 30 }}>
+            <BarChart layout="vertical" data={data} margin={{ left: 20, right: 30 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal vertical={false} />
               <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis
-                dataKey="model"
-                type="category"
-                width={130}
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
+                dataKey="model" type="category" width={130}
+                fontSize={11} tickLine={false} axisLine={false}
                 tickFormatter={(v) => v.length > 20 ? v.slice(0, 20) + '...' : v}
               />
               <Tooltip />
               <Bar dataKey="requests" name="请求数" radius={[0, 4, 4, 0]}>
-                {top10.map((_, i) => (
+                {data.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Bar>
@@ -340,34 +284,29 @@ function ModelsChart({ data, fmtQuota }: {
         </CardContent>
       </Card>
 
-      <Card className="glass">
+      <Card>
         <CardHeader>
           <CardTitle>模型消耗</CardTitle>
-          <CardDescription>按模型统计的额度消耗</CardDescription>
+          <CardDescription>按模型统计的费用消耗</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={350}>
             <PieChart>
               <Pie
-                data={top10}
-                dataKey="quota"
-                nameKey="model"
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
+                data={data} dataKey="cost" nameKey="model"
+                cx="50%" cy="50%" outerRadius={120}
                 label={({ name, percent }: { name?: string; percent?: number }) => {
                   const label = name || '';
                   const pct = percent ?? 0;
                   return `${label.length > 12 ? label.slice(0, 12) + '..' : label} ${(pct * 100).toFixed(0)}%`;
                 }}
-                labelLine={false}
-                fontSize={11}
+                labelLine={false} fontSize={11}
               >
-                {top10.map((_, i) => (
+                {data.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => [fmtQuota(Number(value ?? 0)), '额度']} />
+              <Tooltip formatter={(value) => [fmtCost(Number(value ?? 0)), '费用']} />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
@@ -376,35 +315,30 @@ function ModelsChart({ data, fmtQuota }: {
   );
 }
 
-function UsersChart({ data, fmtQuota }: {
-  data: UserUsageItem[];
-  fmtQuota: (q: number) => string;
+function KeysChart({ data, fmtCost }: {
+  data: KeyUsageItem[];
+  fmtCost: (c: number) => string;
 }) {
-  const top10 = data.slice(0, 10);
-
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      {/* User requests bar chart */}
-      <Card className="glass">
+      <Card>
         <CardHeader>
-          <CardTitle>用户请求量</CardTitle>
-          <CardDescription>按请求数排名的用户</CardDescription>
+          <CardTitle>密钥请求量</CardTitle>
+          <CardDescription>按请求数排名的密钥</CardDescription>
         </CardHeader>
         <CardContent className="pl-2">
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={top10} margin={{ left: 10, right: 30 }}>
+            <BarChart data={data} margin={{ left: 10, right: 30 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
-                dataKey="username"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
+                dataKey="keyName" fontSize={12}
+                tickLine={false} axisLine={false}
                 tickFormatter={(v) => v.length > 10 ? v.slice(0, 10) + '..' : v}
               />
               <YAxis fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip />
               <Bar dataKey="requests" name="请求数" radius={[4, 4, 0, 0]}>
-                {top10.map((_, i) => (
+                {data.map((_, i) => (
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Bar>
@@ -413,37 +347,34 @@ function UsersChart({ data, fmtQuota }: {
         </CardContent>
       </Card>
 
-      {/* User ranking table */}
-      <Card className="glass">
+      <Card>
         <CardHeader>
-          <CardTitle>用户排名</CardTitle>
-          <CardDescription>按用户统计的详细使用情况</CardDescription>
+          <CardTitle>密钥排名</CardTitle>
+          <CardDescription>按密钥统计的详细使用情况</CardDescription>
         </CardHeader>
         <CardContent>
-          {top10.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">暂无用户数据</p>
+          {data.length === 0 ? (
+            <p className="text-center py-8 text-muted-foreground">暂无数据</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2 font-medium text-sm">#</th>
-                    <th className="text-left p-2 font-medium text-sm">用户</th>
-                    <th className="text-right p-2 font-medium text-sm">请求数</th>
-                    <th className="text-right p-2 font-medium text-sm">令牌数</th>
-                    <th className="text-right p-2 font-medium text-sm">额度</th>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="pb-2 pr-3 font-medium">#</th>
+                    <th className="pb-2 pr-3 font-medium">密钥</th>
+                    <th className="pb-2 pr-3 font-medium text-right">请求数</th>
+                    <th className="pb-2 pr-3 font-medium text-right">令牌数</th>
+                    <th className="pb-2 font-medium text-right">费用</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {top10.map((u, i) => (
-                    <tr key={u.username} className="border-b hover:bg-muted/50">
-                      <td className="p-2 text-sm text-muted-foreground">{i + 1}</td>
-                      <td className="p-2 text-sm font-medium">{u.username}</td>
-                      <td className="p-2 text-sm text-right">{u.requests}</td>
-                      <td className="p-2 text-sm text-right text-muted-foreground">
-                        {u.tokens.toLocaleString()}
-                      </td>
-                      <td className="p-2 text-sm text-right">{fmtQuota(u.quota)}</td>
+                  {data.map((k, i) => (
+                    <tr key={k.keyName} className="border-b last:border-0 hover:bg-muted/50">
+                      <td className="py-2 pr-3 text-muted-foreground">{i + 1}</td>
+                      <td className="py-2 pr-3 font-medium">{k.keyName}</td>
+                      <td className="py-2 pr-3 text-right">{k.requests.toLocaleString()}</td>
+                      <td className="py-2 pr-3 text-right text-muted-foreground">{k.tokens.toLocaleString()}</td>
+                      <td className="py-2 text-right">{fmtCost(k.cost)}</td>
                     </tr>
                   ))}
                 </tbody>

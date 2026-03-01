@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getAdminClient, AdminToken } from '@/lib/api/admin';
+import { getApiKeys, updateApiKey, deleteApiKey, GatewayApiKey } from '@/lib/api/gateway-admin';
 import { RefreshCw, Loader2, Trash2, Power, Copy, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { CreateKeyDialog } from '@/components/admin/CreateKeyDialog';
 
 export default function AdminKeysPage() {
-  const [keys, setKeys] = useState<AdminToken[]>([]);
+  const [keys, setKeys] = useState<GatewayApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
@@ -22,15 +22,12 @@ export default function AdminKeysPage() {
   const fetchKeys = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
-
     try {
-      const client = getAdminClient();
-      const result = await client.getTokens(page, perPage);
-      setKeys(result.data);
+      const result = await getApiKeys(page, perPage);
+      setKeys(result.items);
       setTotal(result.total);
       if (isRefresh) toast.success('密钥列表已刷新');
     } catch (error: any) {
-      console.error('Failed to fetch keys:', error);
       toast.error(error.message || '加载密钥列表失败');
     } finally {
       setLoading(false);
@@ -38,25 +35,12 @@ export default function AdminKeysPage() {
     }
   }, [page]);
 
-  useEffect(() => {
-    fetchKeys();
-  }, [fetchKeys]);
+  useEffect(() => { fetchKeys(); }, [fetchKeys]);
 
-  const formatQuota = (quota: number) => {
-    const usd = quota / 500000;
-    return `$${usd.toFixed(4)}`;
-  };
-
-  const formatDate = (timestamp: number) => {
-    if (!timestamp) return '-';
-    return new Date(timestamp * 1000).toLocaleDateString();
-  };
-
-  const handleToggleStatus = async (token: AdminToken) => {
+  const handleToggleStatus = async (key: GatewayApiKey) => {
+    const newStatus = key.status === 1 ? 0 : 1;
     try {
-      const client = getAdminClient();
-      const newStatus = token.status === 1 ? 2 : 1;
-      await client.toggleTokenStatus(token.id, newStatus);
+      await updateApiKey(key.id, { status: newStatus } as any);
       toast.success(`密钥已${newStatus === 1 ? '启用' : '禁用'}`);
       fetchKeys(true);
     } catch (error: any) {
@@ -66,10 +50,8 @@ export default function AdminKeysPage() {
 
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`确定删除密钥 "${name}" 吗?`)) return;
-
     try {
-      const client = getAdminClient();
-      await client.deleteToken(id);
+      await deleteApiKey(id);
       toast.success('密钥已删除');
       fetchKeys(true);
     } catch (error: any) {
@@ -78,14 +60,13 @@ export default function AdminKeysPage() {
   };
 
   const handleCopyKey = (key: string) => {
-    navigator.clipboard.writeText(`sk-${key}`);
+    navigator.clipboard.writeText(key);
     toast.success('密钥已复制到剪贴板');
   };
 
   const filteredKeys = search
     ? keys.filter(k => k.name.toLowerCase().includes(search.toLowerCase()))
     : keys;
-
   const totalPages = Math.ceil(total / perPage);
 
   return (
@@ -94,37 +75,19 @@ export default function AdminKeysPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">密钥管理</h1>
-            <p className="text-muted-foreground">
-              管理 API 密钥、额度和权限
-            </p>
+            <p className="text-muted-foreground">管理 API 密钥、额度和权限</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => fetchKeys(true)}
-              disabled={loading || refreshing}
-            >
-              {refreshing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
+            <Button variant="outline" size="icon" onClick={() => fetchKeys(true)} disabled={loading || refreshing}>
+              {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             </Button>
             <CreateKeyDialog onSuccess={() => fetchKeys(true)} />
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="搜索密钥..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="搜索密钥..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         {loading ? (
@@ -140,9 +103,7 @@ export default function AdminKeysPage() {
             </CardHeader>
             <CardContent>
               {filteredKeys.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  未找到密钥。
-                </div>
+                <div className="text-center py-12 text-muted-foreground">未找到密钥。</div>
               ) : (
                 <>
                   <div className="overflow-x-auto">
@@ -152,9 +113,9 @@ export default function AdminKeysPage() {
                           <th className="text-left p-3 font-medium">名称</th>
                           <th className="text-left p-3 font-medium">密钥</th>
                           <th className="text-left p-3 font-medium">状态</th>
-                          <th className="text-left p-3 font-medium">剩余额度</th>
+                          <th className="text-left p-3 font-medium">总额度</th>
                           <th className="text-left p-3 font-medium">已用</th>
-                          <th className="text-left p-3 font-medium">创建时间</th>
+                          <th className="text-left p-3 font-medium">日/月额度</th>
                           <th className="text-right p-3 font-medium">操作</th>
                         </tr>
                       </thead>
@@ -163,12 +124,10 @@ export default function AdminKeysPage() {
                           <tr key={key.id} className="border-b hover:bg-muted/50">
                             <td className="p-3 font-medium">{key.name}</td>
                             <td className="p-3">
-                              <button
-                                onClick={() => handleCopyKey(key.key)}
+                              <button onClick={() => handleCopyKey(key.key)}
                                 className="font-mono text-sm text-muted-foreground hover:text-foreground transition-colors"
-                                title="Click to copy"
-                              >
-                                sk-{key.key.substring(0, 8)}...
+                                title="点击复制">
+                                {key.key.substring(0, 12)}...
                               </button>
                             </td>
                             <td className="p-3">
@@ -180,12 +139,12 @@ export default function AdminKeysPage() {
                                 {key.status === 1 ? '已启用' : '已禁用'}
                               </span>
                             </td>
-                            <td className="p-3">
-                              {key.unlimited_quota ? '无限' : formatQuota(key.remain_quota)}
-                            </td>
-                            <td className="p-3">{formatQuota(key.used_quota)}</td>
+                            <td className="p-3">${Number(key.totalQuota).toFixed(2)}</td>
+                            <td className="p-3">${Number(key.usedQuota).toFixed(4)}</td>
                             <td className="p-3 text-sm text-muted-foreground">
-                              {formatDate(key.created_time)}
+                              {key.dailyQuota != null ? `$${Number(key.dailyQuota).toFixed(2)}/日` : '-'}
+                              {' / '}
+                              {key.monthlyQuota != null ? `$${Number(key.monthlyQuota).toFixed(2)}/月` : '-'}
                             </td>
                             <td className="p-3 text-right">
                               <div className="flex items-center justify-end gap-1">
@@ -208,16 +167,10 @@ export default function AdminKeysPage() {
 
                   {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                      <p className="text-sm text-muted-foreground">
-                        第 {page} / {totalPages} 页
-                      </p>
+                      <p className="text-sm text-muted-foreground">第 {page} / {totalPages} 页</p>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-                          上一页
-                        </Button>
-                        <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-                          下一页
-                        </Button>
+                        <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>上一页</Button>
+                        <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>下一页</Button>
                       </div>
                     </div>
                   )}
