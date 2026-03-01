@@ -6,6 +6,8 @@ export const translations = {
       tutorial: "Tutorial",
       settings: "Settings",
       github: "GitHub",
+      showcase: "Showcase",
+      models: "Models",
     },
     dashboard: {
       title: "Dashboard",
@@ -65,6 +67,8 @@ export const translations = {
       tutorial: "使用教程",
       settings: "设置",
       github: "GitHub",
+      showcase: "产品介绍",
+      models: "模型状态",
     },
     dashboard: {
       title: "仪表盘",

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Key, BookOpen, Settings } from 'lucide-react';
+import { LayoutDashboard, Key, BookOpen, Settings, Sparkles, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/useI18n';
 
@@ -13,6 +13,8 @@ export function Sidebar() {
   const navItems = [
     { href: '/', label: t.nav.dashboard, icon: LayoutDashboard },
     { href: '/keys', label: t.nav.keys, icon: Key },
+    { href: '/models', label: t.nav.models, icon: Activity },
+    { href: '/showcase', label: t.nav.showcase, icon: Sparkles },
     { href: '/tutorial', label: t.nav.tutorial, icon: BookOpen },
     { href: '/settings', label: t.nav.settings, icon: Settings },
   ];
@@ -48,6 +50,7 @@ export function MobileNav() {
     const navItems = [
       { href: '/', label: t.nav.dashboard, icon: LayoutDashboard },
       { href: '/keys', label: t.nav.keys, icon: Key },
+      { href: '/models', label: t.nav.models, icon: Activity },
       { href: '/tutorial', label: t.nav.tutorial, icon: BookOpen },
       { href: '/settings', label: t.nav.settings, icon: Settings },
     ];

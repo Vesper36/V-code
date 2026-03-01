@@ -11,6 +11,9 @@ services:
       - .env.local
     environment:
       - NODE_ENV=production
+      - DOMAIN_MANAGER_SECRET=v-code-domain-mgr-2024
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - v-code-network
 

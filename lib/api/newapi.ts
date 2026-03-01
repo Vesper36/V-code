@@ -4,9 +4,13 @@ export interface LogItem {
   id: number;
   model_name: string;
   tokens: number;
+  prompt_tokens: number;
+  completion_tokens: number;
   cost: number;
-  created_at: string;
+  latency_ms: number;
+  status_code: number;
   is_stream: boolean;
+  created_at: string;
 }
 
 export class NewAPIClient {
@@ -41,13 +45,10 @@ export class NewAPIClient {
   }
 
   async getLogs(page = 1, perPage = 20): Promise<LogItem[]> {
-    const endDate = new Date().toISOString().slice(0, 10);
-    const startDate = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
     const result = await this.fetchAPI<any>(
-      `/api/v1/dashboard/billing/usage?start_date=${startDate}&end_date=${endDate}`
+      `/api/v1/logs?page=${page}&per_page=${perPage}`
     );
-    // billing/usage 不返回逐条日志，返回空数组
-    return [];
+    return result.data ?? [];
   }
 
   async getUsage(startDate: string, endDate: string): Promise<UsageData[]> {
@@ -57,8 +58,8 @@ export class NewAPIClient {
     if (!result.daily_costs) return [];
     return result.daily_costs.map((item: any) => ({
       date: new Date(item.timestamp * 1000).toISOString().split('T')[0],
-      total_calls: 0,
-      total_tokens: 0,
+      total_calls: item.calls ?? 0,
+      total_tokens: item.tokens ?? 0,
       total_cost: item.line_items?.reduce((acc: number, cur: any) => acc + cur.cost, 0) ?? 0,
       cache_hits: 0,
     }));

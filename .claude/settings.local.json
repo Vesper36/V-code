@@ -32,7 +32,32 @@
       "Bash(rsync:*)",
       "Bash(ssh HZ-US-code_deploy \"docker ps -a | grep 3000\")",
       "Bash(ssh HZ-US-code_deploy \"docker ps | grep v-ai\")",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "Bash(python3 -m json.tool:*)",
+      "Bash(python3:*)",
+      "WebSearch",
+      "WebFetch(domain:tiptap.dev)",
+      "WebFetch(domain:milkdown.dev)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(pnpm install:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "WebFetch(domain:www.prisma.io)",
+      "Bash(ls:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(node -e:*)",
+      "Bash(for pkg in starter-kit extension-code-block-lowlight extension-table extension-table-row extension-table-cell extension-table-header extension-image extension-link extension-task-list extension-task-item extension-placeholder extension-typography)",
+      "Bash(do echo \"=== @tiptap/$pkg ===\")",
+      "Bash(done)",
+      "Bash(grep:*)",
+      "Bash(git status:*)",
+      "Bash(git push:*)",
+      "Bash(git remote add:*)",
+      "Bash(/Users/vesper/.claude/bin/codeagent-wrapper:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git config:*)",
+      "Bash(git rm:*)"
     ]
   }
 }

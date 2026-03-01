@@ -24,11 +24,11 @@ function hashToken(token: string): string {
 // POST: login
 export async function POST(request: NextRequest) {
   try {
-    const { username, password, rememberMe } = await request.json();
+    const { username, password } = await request.json();
 
     // Server-side only env vars (no NEXT_PUBLIC_ prefix)
     const adminUser = process.env.ADMIN_USERNAME;
-    const adminPass = process.env.ADMIN_PASSWORD;
+    const adminPass = (globalThis as any).__adminPasswordOverride || process.env.ADMIN_PASSWORD;
 
     if (!adminUser || !adminPass) {
       console.error('ADMIN_USERNAME or ADMIN_PASSWORD not configured');
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     const token = generateToken();
     const hashedToken = hashToken(token);
-    const ttl = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+    const ttl = 30 * 24 * 60 * 60 * 1000;
     const expires = Date.now() + ttl;
 
     const sessions = getSessionMap();
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = NextResponse.json({ success: true, username });
-    const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
+    const maxAge = 30 * 24 * 60 * 60;
     response.cookies.set('admin_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

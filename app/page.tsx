@@ -171,21 +171,21 @@ export default function Dashboard() {
               title={t.dashboard.used}
               value={formatCurrency(quota?.used_quota)}
               icon={Activity}
-              description="Since inception"
+              description={t.dashboard.balance}
               className="glass"
             />
             <StatCard
               title={t.dashboard.requests}
               value={usage.reduce((acc, curr) => acc + curr.total_calls, 0).toLocaleString()}
               icon={Zap}
-              description="Last 30 days"
+              description={t.dashboard.chart}
               className="glass"
             />
             <StatCard
               title={t.dashboard.tokens}
                value={(usage.reduce((acc, curr) => acc + curr.total_tokens, 0) / 1000).toFixed(1) + 'k'}
               icon={Database}
-              description="Last 30 days"
+              description={t.dashboard.chart}
               className="glass"
             />
           </div>

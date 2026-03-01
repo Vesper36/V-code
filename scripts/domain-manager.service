@@ -1,0 +1,14 @@
+[Unit]
+Description=V-CODE Domain Manager Service
+After=network.target nginx.service
+
+[Service]
+Type=simple
+User=root
+Environment=DOMAIN_MANAGER_SECRET=v-code-domain-mgr-2024
+ExecStart=/usr/bin/node /var/www/v-code/scripts/domain-manager.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
