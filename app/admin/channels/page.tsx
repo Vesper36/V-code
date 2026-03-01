@@ -10,13 +10,14 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   getSources, createSource, updateSource, deleteSource,
-  GatewaySource,
+  fetchUpstreamModels, GatewaySource,
 } from '@/lib/api/gateway-admin';
 import {
   RefreshCw, Loader2, Search, Plus, Trash2, Power, Pencil,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Download, CheckSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -37,7 +38,9 @@ export default function AdminSourcesPage() {
   const [formName, setFormName] = useState('');
   const [formBaseUrl, setFormBaseUrl] = useState('');
   const [formApiKey, setFormApiKey] = useState('');
-  const [formModels, setFormModels] = useState('');
+  const [formSelectedModels, setFormSelectedModels] = useState<string[]>([]);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [fetchingModels, setFetchingModels] = useState(false);
   const [formPriority, setFormPriority] = useState('0');
   const [formWeight, setFormWeight] = useState('1');
 
@@ -83,7 +86,8 @@ export default function AdminSourcesPage() {
 
   const resetForm = () => {
     setFormName(''); setFormBaseUrl(''); setFormApiKey('');
-    setFormModels(''); setFormPriority('0'); setFormWeight('1');
+    setFormSelectedModels([]); setAvailableModels([]);
+    setFormPriority('0'); setFormWeight('1');
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -94,14 +98,11 @@ export default function AdminSourcesPage() {
     }
     setCreateLoading(true);
     try {
-      const models = formModels.trim()
-        ? formModels.split(',').map(m => m.trim()).filter(Boolean)
-        : [];
       await createSource({
         name: formName.trim(),
         baseUrl: formBaseUrl.trim(),
         apiKey: formApiKey.trim(),
-        models,
+        models: formSelectedModels,
         priority: parseInt(formPriority) || 0,
         weight: parseInt(formWeight) || 1,
       } as any);
@@ -121,7 +122,9 @@ export default function AdminSourcesPage() {
     setFormName(s.name);
     setFormBaseUrl(s.baseUrl);
     setFormApiKey(s.apiKey);
-    setFormModels(Array.isArray(s.models) ? s.models.join(', ') : '');
+    const models = Array.isArray(s.models) ? s.models : [];
+    setFormSelectedModels(models);
+    setAvailableModels(models);
     setFormPriority(String(s.priority));
     setFormWeight(String(s.weight));
     setEditOpen(true);
@@ -135,14 +138,11 @@ export default function AdminSourcesPage() {
     }
     setEditLoading(true);
     try {
-      const models = formModels.trim()
-        ? formModels.split(',').map(m => m.trim()).filter(Boolean)
-        : [];
       await updateSource(editingSource.id, {
         name: formName.trim(),
         baseUrl: formBaseUrl.trim(),
         apiKey: formApiKey.trim() || undefined,
-        models,
+        models: formSelectedModels,
         priority: parseInt(formPriority) || 0,
         weight: parseInt(formWeight) || 1,
       } as any);
@@ -222,7 +222,11 @@ export default function AdminSourcesPage() {
           description="配置新的上游 API 源"
           loading={createLoading}
           onSubmit={handleCreate}
-          form={{ formName, setFormName, formBaseUrl, setFormBaseUrl, formApiKey, setFormApiKey, formModels, setFormModels, formPriority, setFormPriority, formWeight, setFormWeight }}
+          form={{
+            formName, setFormName, formBaseUrl, setFormBaseUrl, formApiKey, setFormApiKey,
+            formSelectedModels, setFormSelectedModels, availableModels, setAvailableModels,
+            fetchingModels, setFetchingModels, formPriority, setFormPriority, formWeight, setFormWeight,
+          }}
         />
 
         <SourceFormDialog
@@ -232,7 +236,11 @@ export default function AdminSourcesPage() {
           description={`修改上游源 #${editingSource?.id} 的配置`}
           loading={editLoading}
           onSubmit={handleEdit}
-          form={{ formName, setFormName, formBaseUrl, setFormBaseUrl, formApiKey, setFormApiKey, formModels, setFormModels, formPriority, setFormPriority, formWeight, setFormWeight }}
+          form={{
+            formName, setFormName, formBaseUrl, setFormBaseUrl, formApiKey, setFormApiKey,
+            formSelectedModels, setFormSelectedModels, availableModels, setAvailableModels,
+            fetchingModels, setFetchingModels, formPriority, setFormPriority, formWeight, setFormWeight,
+          }}
           isEdit
         />
       </div>
@@ -331,18 +339,62 @@ function SourceFormDialog({ open, onOpenChange, title, description, loading, onS
     formName: string; setFormName: (v: string) => void
     formBaseUrl: string; setFormBaseUrl: (v: string) => void
     formApiKey: string; setFormApiKey: (v: string) => void
-    formModels: string; setFormModels: (v: string) => void
+    formSelectedModels: string[]; setFormSelectedModels: (v: string[]) => void
+    availableModels: string[]; setAvailableModels: (v: string[]) => void
+    fetchingModels: boolean; setFetchingModels: (v: boolean) => void
     formPriority: string; setFormPriority: (v: string) => void
     formWeight: string; setFormWeight: (v: string) => void
   }
   isEdit?: boolean
 }) {
-  const { formName, setFormName, formBaseUrl, setFormBaseUrl, formApiKey, setFormApiKey,
-    formModels, setFormModels, formPriority, setFormPriority, formWeight, setFormWeight } = form;
+  const {
+    formName, setFormName, formBaseUrl, setFormBaseUrl, formApiKey, setFormApiKey,
+    formSelectedModels, setFormSelectedModels, availableModels, setAvailableModels,
+    fetchingModels, setFetchingModels, formPriority, setFormPriority, formWeight, setFormWeight,
+  } = form;
+
+  const handleFetchModels = async () => {
+    if (!formBaseUrl.trim() || !formApiKey.trim()) {
+      toast.error('请先填写基础 URL 和 API 密钥');
+      return;
+    }
+    setFetchingModels(true);
+    try {
+      const result = await fetchUpstreamModels(formBaseUrl.trim(), formApiKey.trim());
+      setAvailableModels(result.models);
+      if (result.models.length === 0) {
+        toast.warning('未获取到任何模型');
+      } else {
+        toast.success(`获取到 ${result.models.length} 个模型`);
+      }
+    } catch (error: any) {
+      toast.error(error.message || '获取模型列表失败');
+    } finally {
+      setFetchingModels(false);
+    }
+  };
+
+  const toggleModel = (model: string) => {
+    setFormSelectedModels(
+      formSelectedModels.includes(model)
+        ? formSelectedModels.filter(m => m !== model)
+        : [...formSelectedModels, model]
+    );
+  };
+
+  const allSelected = availableModels.length > 0 && availableModels.every(m => formSelectedModels.includes(m));
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setFormSelectedModels([]);
+    } else {
+      setFormSelectedModels([...availableModels]);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] glass border-white/20">
+      <DialogContent className="sm:max-w-[560px] glass border-white/20">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -363,10 +415,52 @@ function SourceFormDialog({ open, onOpenChange, title, description, loading, onS
                 placeholder={isEdit ? '留空则不修改' : 'sk-...'} required={!isEdit} />
             </div>
             <div className="grid gap-2">
-              <Label>支持模型</Label>
-              <Input value={formModels} onChange={(e) => setFormModels(e.target.value)}
-                placeholder="gpt-4o, claude-3.5-sonnet, ..." />
-              <p className="text-xs text-muted-foreground">多个模型用逗号分隔</p>
+              <div className="flex items-center justify-between">
+                <Label>支持模型</Label>
+                <div className="flex items-center gap-2">
+                  {availableModels.length > 0 && (
+                    <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-xs gap-1"
+                      onClick={toggleAll}>
+                      <CheckSquare className="h-3 w-3" />
+                      {allSelected ? '清空' : '全选'}
+                    </Button>
+                  )}
+                  <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs gap-1"
+                    onClick={handleFetchModels} disabled={fetchingModels}>
+                    {fetchingModels
+                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      : <Download className="h-3 w-3" />}
+                    获取模型
+                  </Button>
+                </div>
+              </div>
+              {availableModels.length > 0 ? (
+                <div className="border rounded-md p-2 max-h-[200px] overflow-y-auto space-y-1">
+                  {availableModels.map(model => (
+                    <div key={model} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-muted/50 cursor-pointer"
+                      onClick={() => toggleModel(model)}>
+                      <Checkbox
+                        checked={formSelectedModels.includes(model)}
+                        onCheckedChange={() => toggleModel(model)}
+                        id={`model-${model}`}
+                      />
+                      <label htmlFor={`model-${model}`} className="text-sm cursor-pointer flex-1 truncate">{model}</label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="border rounded-md p-3 text-sm text-muted-foreground text-center">
+                  点击"获取模型"从上游自动拉取，或手动输入
+                </div>
+              )}
+              {formSelectedModels.length > 0 && (
+                <p className="text-xs text-muted-foreground">已选 {formSelectedModels.length} 个模型</p>
+              )}
+              {availableModels.length === 0 && (
+                <Input value={formSelectedModels.join(', ')}
+                  onChange={(e) => setFormSelectedModels(e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                  placeholder="gpt-4o, claude-3.5-sonnet, ..." />
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">

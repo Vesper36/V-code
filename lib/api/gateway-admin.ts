@@ -236,3 +236,12 @@ export async function getModelDistribution() {
 export async function getKeyUsage() {
   return fetchAPI<KeyUsageItem[]>('/api/admin/stats?type=keys')
 }
+
+// ========== Source Utils ==========
+
+export async function fetchUpstreamModels(baseUrl: string, apiKey: string) {
+  return fetchAPI<{ models: string[] }>('/api/admin/sources/fetch-models', {
+    method: 'POST',
+    body: JSON.stringify({ baseUrl, apiKey }),
+  })
+}
