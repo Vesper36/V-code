@@ -240,7 +240,7 @@ export async function getKeyUsage() {
 // ========== Source Utils ==========
 
 export async function fetchUpstreamModels(baseUrl: string, apiKey: string) {
-  return fetchAPI<{ models: string[] }>('/api/admin/sources/fetch-models', {
+  return fetchAPI<{ models: string[] }>('/api/admin/source-models', {
     method: 'POST',
     body: JSON.stringify({ baseUrl, apiKey }),
   })
