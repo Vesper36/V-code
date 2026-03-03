@@ -1,6 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  type Dispatch,
+  type FormEvent,
+  type SetStateAction,
+} from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +28,45 @@ import {
   ChevronLeft, ChevronRight, Download, CheckSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
+function normalizeModelList(models: unknown): string[] {
+  if (!Array.isArray(models)) return [];
+
+  // Defensive normalization prevents malformed upstream payloads from crashing client rendering.
+  const normalized = models
+    .map((model) => (typeof model === 'string' ? model.trim() : ''))
+    .filter((model): model is string => model.length > 0);
+
+  return [...new Set(normalized)].sort((a, b) => a.localeCompare(b));
+}
+
+function sanitizeModelId(model: string, index: number): string {
+  const safePart = model.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+  return `model-${index}-${safePart}`;
+}
+
+interface SourceFormState {
+  formName: string
+  setFormName: Dispatch<SetStateAction<string>>
+  formBaseUrl: string
+  setFormBaseUrl: Dispatch<SetStateAction<string>>
+  formApiKey: string
+  setFormApiKey: Dispatch<SetStateAction<string>>
+  formSelectedModels: string[]
+  setFormSelectedModels: Dispatch<SetStateAction<string[]>>
+  availableModels: string[]
+  setAvailableModels: Dispatch<SetStateAction<string[]>>
+  fetchingModels: boolean
+  setFetchingModels: Dispatch<SetStateAction<boolean>>
+  formPriority: string
+  setFormPriority: Dispatch<SetStateAction<string>>
+  formWeight: string
+  setFormWeight: Dispatch<SetStateAction<string>>
+}
 
 export default function AdminSourcesPage() {
   const [sources, setSources] = useState<GatewaySource[]>([]);
@@ -52,8 +99,8 @@ export default function AdminSourcesPage() {
       setSources(result.items);
       setTotal(result.total);
       if (isRefresh) toast.success('上游源列表已刷新');
-    } catch (error: any) {
-      toast.error(error.message || '加载上游源列表失败');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, '加载上游源列表失败'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -65,11 +112,11 @@ export default function AdminSourcesPage() {
   const handleToggleStatus = async (s: GatewaySource) => {
     const newStatus = s.status === 1 ? 0 : 1;
     try {
-      await updateSource(s.id, { status: newStatus } as any);
+      await updateSource(s.id, { status: newStatus });
       toast.success(`上游源已${newStatus === 1 ? '启用' : '禁用'}`);
       fetchSources(true);
-    } catch (error: any) {
-      toast.error(error.message || '更新状态失败');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, '更新状态失败'));
     }
   };
 
@@ -79,8 +126,8 @@ export default function AdminSourcesPage() {
       await deleteSource(id);
       toast.success('上游源已删除');
       fetchSources(true);
-    } catch (error: any) {
-      toast.error(error.message || '删除上游源失败');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, '删除上游源失败'));
     }
   };
 
@@ -90,7 +137,7 @@ export default function AdminSourcesPage() {
     setFormPriority('0'); setFormWeight('1');
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formBaseUrl.trim() || !formApiKey.trim()) {
       toast.error('名称、基础 URL 和 API 密钥为必填项');
@@ -105,13 +152,13 @@ export default function AdminSourcesPage() {
         models: formSelectedModels,
         priority: parseInt(formPriority) || 0,
         weight: parseInt(formWeight) || 1,
-      } as any);
+      });
       toast.success('上游源已创建');
       setCreateOpen(false);
       resetForm();
       fetchSources(true);
-    } catch (error: any) {
-      toast.error(error.message || '创建上游源失败');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, '创建上游源失败'));
     } finally {
       setCreateLoading(false);
     }
@@ -122,7 +169,7 @@ export default function AdminSourcesPage() {
     setFormName(s.name);
     setFormBaseUrl(s.baseUrl);
     setFormApiKey(s.apiKey);
-    const models = Array.isArray(s.models) ? s.models : [];
+    const models = normalizeModelList(s.models);
     setFormSelectedModels(models);
     setAvailableModels(models);
     setFormPriority(String(s.priority));
@@ -130,7 +177,7 @@ export default function AdminSourcesPage() {
     setEditOpen(true);
   };
 
-  const handleEdit = async (e: React.FormEvent) => {
+  const handleEdit = async (e: FormEvent) => {
     e.preventDefault();
     if (!editingSource || !formName.trim() || !formBaseUrl.trim()) {
       toast.error('名称和基础 URL 为必填项');
@@ -145,14 +192,14 @@ export default function AdminSourcesPage() {
         models: formSelectedModels,
         priority: parseInt(formPriority) || 0,
         weight: parseInt(formWeight) || 1,
-      } as any);
+      });
       toast.success('上游源已更新');
       setEditOpen(false);
       setEditingSource(null);
       resetForm();
       fetchSources(true);
-    } catch (error: any) {
-      toast.error(error.message || '更新上游源失败');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, '更新上游源失败'));
     } finally {
       setEditLoading(false);
     }
@@ -334,17 +381,8 @@ function SourceFormDialog({ open, onOpenChange, title, description, loading, onS
   title: string
   description: string
   loading: boolean
-  onSubmit: (e: React.FormEvent) => void
-  form: {
-    formName: string; setFormName: (v: string) => void
-    formBaseUrl: string; setFormBaseUrl: (v: string) => void
-    formApiKey: string; setFormApiKey: (v: string) => void
-    formSelectedModels: string[]; setFormSelectedModels: (v: string[]) => void
-    availableModels: string[]; setAvailableModels: (v: string[]) => void
-    fetchingModels: boolean; setFetchingModels: (v: boolean) => void
-    formPriority: string; setFormPriority: (v: string) => void
-    formWeight: string; setFormWeight: (v: string) => void
-  }
+  onSubmit: (e: FormEvent) => void
+  form: SourceFormState
   isEdit?: boolean
 }) {
   const {
@@ -361,35 +399,45 @@ function SourceFormDialog({ open, onOpenChange, title, description, loading, onS
     setFetchingModels(true);
     try {
       const result = await fetchUpstreamModels(formBaseUrl.trim(), formApiKey.trim());
-      setAvailableModels(result.models);
-      if (result.models.length === 0) {
+      const normalizedModels = normalizeModelList(result.models);
+      setAvailableModels(normalizedModels);
+      setFormSelectedModels((previous) => {
+        const normalizedPrevious = normalizeModelList(previous);
+        if (normalizedModels.length === 0) return normalizedPrevious;
+        const availableSet = new Set(normalizedModels);
+        return normalizedPrevious.filter((model) => availableSet.has(model));
+      });
+
+      if (normalizedModels.length === 0) {
         toast.warning('未获取到任何模型');
       } else {
-        toast.success(`获取到 ${result.models.length} 个模型`);
+        toast.success(`获取到 ${normalizedModels.length} 个模型`);
       }
-    } catch (error: any) {
-      toast.error(error.message || '获取模型列表失败');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, '获取模型列表失败'));
     } finally {
       setFetchingModels(false);
     }
   };
 
-  const toggleModel = (model: string) => {
-    setFormSelectedModels(
-      formSelectedModels.includes(model)
-        ? formSelectedModels.filter(m => m !== model)
-        : [...formSelectedModels, model]
-    );
+  const handleModelCheckedChange = (model: string, checked: boolean | 'indeterminate') => {
+    // Use Radix checked state directly instead of toggling to avoid double-trigger race conditions.
+    setFormSelectedModels((previous) => {
+      const selected = new Set(previous);
+      if (checked === true) {
+        selected.add(model);
+      } else {
+        selected.delete(model);
+      }
+      return [...selected];
+    });
   };
 
-  const allSelected = availableModels.length > 0 && availableModels.every(m => formSelectedModels.includes(m));
+  const selectedModelSet = useMemo(() => new Set(formSelectedModels), [formSelectedModels]);
+  const allSelected = availableModels.length > 0 && availableModels.every((model) => selectedModelSet.has(model));
 
   const toggleAll = () => {
-    if (allSelected) {
-      setFormSelectedModels([]);
-    } else {
-      setFormSelectedModels([...availableModels]);
-    }
+    setFormSelectedModels(allSelected ? [] : [...availableModels]);
   };
 
   return (
@@ -436,21 +484,23 @@ function SourceFormDialog({ open, onOpenChange, title, description, loading, onS
               </div>
               {availableModels.length > 0 ? (
                 <div className="border rounded-md p-2 max-h-[200px] overflow-y-auto space-y-1">
-                  {availableModels.map(model => (
-                    <div key={model} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-muted/50 cursor-pointer"
-                      onClick={() => toggleModel(model)}>
-                      <Checkbox
-                        checked={formSelectedModels.includes(model)}
-                        onCheckedChange={() => toggleModel(model)}
-                        id={`model-${model}`}
-                      />
-                      <label htmlFor={`model-${model}`} className="text-sm cursor-pointer flex-1 truncate">{model}</label>
-                    </div>
-                  ))}
+                  {availableModels.map((model, index) => {
+                    const modelId = sanitizeModelId(model, index);
+                    return (
+                      <label key={`${model}-${index}`} htmlFor={modelId} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-muted/50 cursor-pointer">
+                        <Checkbox
+                          checked={selectedModelSet.has(model)}
+                          onCheckedChange={(checked) => handleModelCheckedChange(model, checked)}
+                          id={modelId}
+                        />
+                        <span className="text-sm cursor-pointer flex-1 truncate">{model}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="border rounded-md p-3 text-sm text-muted-foreground text-center">
-                  点击"获取模型"从上游自动拉取，或手动输入
+                  点击 &quot;获取模型&quot; 从上游自动拉取，或手动输入
                 </div>
               )}
               {formSelectedModels.length > 0 && (
@@ -458,7 +508,7 @@ function SourceFormDialog({ open, onOpenChange, title, description, loading, onS
               )}
               {availableModels.length === 0 && (
                 <Input value={formSelectedModels.join(', ')}
-                  onChange={(e) => setFormSelectedModels(e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                  onChange={(e) => setFormSelectedModels(normalizeModelList(e.target.value.split(',')))}
                   placeholder="gpt-4o, claude-3.5-sonnet, ..." />
               )}
             </div>

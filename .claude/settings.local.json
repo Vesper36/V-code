@@ -65,7 +65,27 @@
       "WebFetch(domain:docs.right.codes)",
       "mcp__Playwright__browser_navigate",
       "mcp__Playwright__browser_snapshot",
-      "mcp__Playwright__browser_click"
+      "mcp__Playwright__browser_click",
+      "Bash(/tmp/update-docs.sh)",
+      "WebFetch(domain:xaicontrol.com)",
+      "Bash(/tmp/v-docs-final/01-quick-start.md:*)",
+      "Bash(/tmp/v-docs-final/02-claude-code.md:*)",
+      "Bash(__NEW_LINE_c700eff37accdf86__ cat)",
+      "Bash(/tmp/v-docs-final/03-cursor-vscode.md:*)",
+      "Bash(/tmp/v-docs-final/04-cherry-studio.md:*)",
+      "Bash(__NEW_LINE_c700eff37accdf86__ echo \"所有文档已创建完成\")",
+      "Bash(/tmp/v-docs-final/05-api-reference.md:*)",
+      "Bash(__NEW_LINE_abbcc520791a4428__ echo \"API 参考文档已创建\")",
+      "Bash(jq:*)",
+      "Bash(__NEW_LINE_96dfb9b806b2cea3__ chmod +x /tmp/update-docs-final.sh)",
+      "Bash(/tmp/update-docs-final.sh)",
+      "Bash(sort:*)",
+      "Bash(/tmp/update-docs-expanded.sh)",
+      "Bash(git reset:*)",
+      "Bash(/tmp/v-docs-expanded/05-api-reference.md:*)",
+      "Bash(/tmp/codex-task-claude-code.txt:*)",
+      "Bash(__NEW_LINE_2e9879d503860178__ cat /tmp/codex-task-claude-code.txt)",
+      "Bash(codeagent-wrapper:*)"
     ]
   }
 }

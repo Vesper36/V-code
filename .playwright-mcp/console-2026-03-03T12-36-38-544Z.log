@@ -1,0 +1,30 @@
+[ 1165749ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/docs/cherry-studio-config:0
+[ 1165957ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/favicon.ico:0
+[ 1167752ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/docs/cherry-studio-config:0
+[ 1168042ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/favicon.ico:0
+[ 1171711ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/docs:0
+[ 1171910ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/favicon.ico:0
+[ 1174753ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/docs:0
+[ 1174956ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/favicon.ico:0
+[ 1187679ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/docs:0
+[ 1187967ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/favicon.ico:0
+[ 1190140ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/docs:0
+[ 1190339ms] [ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ https://v-code.vesper36.com/favicon.ico:0
+[ 1377996ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://v-code.vesper36.com/api/docs/categories:0
+[ 1378307ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://v-code.vesper36.com/api/docs?status=published&perPage=200:0
+[ 1378321ms] TypeError: u.map is not a function
+    at u (https://v-code.vesper36.com/_next/static/chunks/4be76692055e5c52.js:1:21763)
+    at av (https://v-code.vesper36.com/_next/static/chunks/8b72cfc40036c827.js:1:63231)
+    at oY (https://v-code.vesper36.com/_next/static/chunks/8b72cfc40036c827.js:1:83504)
+    at io (https://v-code.vesper36.com/_next/static/chunks/8b72cfc40036c827.js:1:94936)
+    at sc (https://v-code.vesper36.com/_next/static/chunks/8b72cfc40036c827.js:1:137957)
+    at https://v-code.vesper36.com/_next/static/chunks/8b72cfc40036c827.js:1:137802
+    at ss (https://v-code.vesper36.com/_next/static/chunks/8b72cfc40036c827.js:1:137810)
+    at u9 (https://v-code.vesper36.com/_next/static/chunks/8b72cfc40036c827.js:1:133735)
+    at sV (https://v-code.vesper36.com/_next/static/chunks/8b72cfc40036c827.js:1:159330)
+    at MessagePort.O (https://v-code.vesper36.com/_next/static/chunks/8b72cfc40036c827.js:1:8296)
+[ 1378323ms] TypeError: e is not iterable
+    at r (https://v-code.vesper36.com/_next/static/chunks/4be76692055e5c52.js:1:20578)
+    at https://v-code.vesper36.com/_next/static/chunks/4be76692055e5c52.js:1:20619
+[ 1378511ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://v-code.vesper36.com/api/docs?status=published&perPage=50:0
+[ 1378519ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ https://v-code.vesper36.com/api/docs/categories:0
