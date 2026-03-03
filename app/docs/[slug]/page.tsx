@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { DocsLayout } from '@/components/docs/DocsLayout'
 import { MarkdownRenderer } from '@/components/docs/MarkdownRenderer'
 import { DocTOC } from '@/components/docs/DocTOC'
+import { ReadingProgress } from '@/components/docs/ReadingProgress'
+import { BackToTop } from '@/components/docs/BackToTop'
 import { format } from 'date-fns'
 import { Clock, Eye } from 'lucide-react'
 
@@ -64,36 +66,40 @@ export default function DocDetailPage() {
   if (!doc) return null
 
   return (
-    <DocsLayout toc={<DocTOC content={doc.content} />}>
-      <article className="max-w-3xl">
-        {/* Header */}
-        <div className="mb-8">
-          {doc.category && (
-            <span className="inline-block px-2 py-0.5 text-xs bg-muted rounded mb-3">
-              {doc.category.name}
-            </span>
-          )}
-          <h1 className="text-3xl font-bold">{doc.title}</h1>
-          {doc.excerpt && (
-            <p className="text-lg text-muted-foreground mt-2">{doc.excerpt}</p>
-          )}
-          <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
-            {doc.publishedAt && (
-              <span className="flex items-center gap-1">
-                <Clock size={14} />
-                {format(new Date(doc.publishedAt), 'yyyy-MM-dd')}
+    <>
+      <ReadingProgress />
+      <DocsLayout toc={<DocTOC content={doc.content} />}>
+        <article className="max-w-3xl">
+          {/* Header */}
+          <div className="mb-8">
+            {doc.category && (
+              <span className="inline-block px-2 py-0.5 text-xs bg-muted rounded mb-3">
+                {doc.category.name}
               </span>
             )}
-            <span className="flex items-center gap-1">
-              <Eye size={14} />
-              {doc.viewCount} 次浏览
-            </span>
+            <h1 className="text-3xl font-bold">{doc.title}</h1>
+            {doc.excerpt && (
+              <p className="text-lg text-muted-foreground mt-2">{doc.excerpt}</p>
+            )}
+            <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
+              {doc.publishedAt && (
+                <span className="flex items-center gap-1">
+                  <Clock size={14} />
+                  {format(new Date(doc.publishedAt), 'yyyy-MM-dd')}
+                </span>
+              )}
+              <span className="flex items-center gap-1">
+                <Eye size={14} />
+                {doc.viewCount} 次浏览
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <MarkdownRenderer content={doc.content} />
-      </article>
-    </DocsLayout>
+          {/* Content */}
+          <MarkdownRenderer content={doc.content} />
+        </article>
+      </DocsLayout>
+      <BackToTop />
+    </>
   )
 }

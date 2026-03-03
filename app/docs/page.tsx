@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { DocsLayout } from '@/components/docs/DocsLayout'
-import { FileText, Clock } from 'lucide-react'
+import { FileText, Clock, Search } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface DocItem {
@@ -19,6 +19,7 @@ interface DocItem {
 export default function DocsPage() {
   const [docs, setDocs] = useState<DocItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetch('/api/docs?status=published&perPage=50')
@@ -28,21 +29,45 @@ export default function DocsPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  const filteredDocs = docs.filter((doc) => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      doc.title.toLowerCase().includes(query) ||
+      doc.excerpt?.toLowerCase().includes(query) ||
+      doc.category?.name.toLowerCase().includes(query)
+    )
+  })
+
   return (
     <DocsLayout>
       <div className="max-w-3xl">
         <h1 className="text-3xl font-bold mb-2">文档中心</h1>
-        <p className="text-muted-foreground mb-8">
+        <p className="text-muted-foreground mb-6">
           浏览所有已发布的文档和指南。
         </p>
 
+        {/* Search */}
+        <div className="relative mb-8">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <input
+            type="text"
+            placeholder="搜索文档标题、内容或分类..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+        </div>
+
         {loading ? (
           <div className="text-muted-foreground py-8">加载中...</div>
-        ) : docs.length === 0 ? (
-          <div className="text-muted-foreground py-8">暂无已发布的文档。</div>
+        ) : filteredDocs.length === 0 ? (
+          <div className="text-muted-foreground py-8">
+            {searchQuery ? '未找到匹配的文档' : '暂无已发布的文档'}
+          </div>
         ) : (
           <div className="space-y-4">
-            {docs.map((doc) => (
+            {filteredDocs.map((doc) => (
               <Link
                 key={doc.id}
                 href={`/docs/${doc.slug}`}
