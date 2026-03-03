@@ -9,7 +9,13 @@ import { DocTOC } from '@/components/docs/DocTOC'
 import { ReadingProgress } from '@/components/docs/ReadingProgress'
 import { BackToTop } from '@/components/docs/BackToTop'
 import { format } from 'date-fns'
-import { Clock, Eye } from 'lucide-react'
+import { Clock, Eye, User, BookOpen } from 'lucide-react'
+
+// 计算阅读时间（基于字数，中文约 300 字/分钟）
+function calculateReadingTime(content: string): number {
+  const wordCount = content.length
+  return Math.ceil(wordCount / 300)
+}
 
 interface DocDetail {
   id: number
@@ -65,6 +71,8 @@ export default function DocDetailPage() {
 
   if (!doc) return null
 
+  const readingTime = calculateReadingTime(doc.content)
+
   return (
     <>
       <ReadingProgress />
@@ -81,19 +89,35 @@ export default function DocDetailPage() {
             {doc.excerpt && (
               <p className="text-lg text-muted-foreground mt-2">{doc.excerpt}</p>
             )}
-            <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
+
+            {/* Meta Info */}
+            <div className="flex flex-wrap items-center gap-4 mt-4 text-sm">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-md">
+                <User size={14} className="text-muted-foreground" />
+                <span className="text-muted-foreground">作者：</span>
+                <span className="font-medium">{doc.author || 'V-CODE'}</span>
+              </div>
               {doc.publishedAt && (
-                <span className="flex items-center gap-1">
-                  <Clock size={14} />
-                  {format(new Date(doc.publishedAt), 'yyyy-MM-dd')}
-                </span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-md">
+                  <Clock size={14} className="text-muted-foreground" />
+                  <span className="text-muted-foreground">发布：</span>
+                  <span className="font-medium">{format(new Date(doc.publishedAt), 'yyyy-MM-dd')}</span>
+                </div>
               )}
-              <span className="flex items-center gap-1">
-                <Eye size={14} />
-                {doc.viewCount} 次浏览
-              </span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-md">
+                <BookOpen size={14} className="text-muted-foreground" />
+                <span className="text-muted-foreground">阅读：</span>
+                <span className="font-medium">约 {readingTime} 分钟</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-md">
+                <Eye size={14} className="text-muted-foreground" />
+                <span className="font-medium">{doc.viewCount}</span>
+                <span className="text-muted-foreground">次浏览</span>
+              </div>
             </div>
           </div>
+
+          <hr className="mb-8 border-border" />
 
           {/* Content */}
           <MarkdownRenderer content={doc.content} />
