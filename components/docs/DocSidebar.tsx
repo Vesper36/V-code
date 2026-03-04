@@ -19,7 +19,11 @@ interface SidebarDoc {
   categoryId: number | null
 }
 
-export function DocSidebar() {
+interface DocSidebarProps {
+  onNavigate?: () => void
+}
+
+export function DocSidebar({ onNavigate }: DocSidebarProps = {}) {
   const pathname = usePathname()
   const [categories, setCategories] = useState<Category[]>([])
   const [docs, setDocs] = useState<SidebarDoc[]>([])
@@ -85,6 +89,7 @@ export function DocSidebar() {
               <Link
                 key={doc.slug}
                 href={`/docs/${doc.slug}`}
+                onClick={onNavigate}
                 className={`flex items-center gap-1.5 py-1.5 px-2 text-sm rounded-md transition-colors ${
                   pathname === `/docs/${doc.slug}`
                     ? 'bg-primary/10 text-primary font-medium'
@@ -115,6 +120,7 @@ export function DocSidebar() {
             <Link
               key={doc.slug}
               href={`/docs/${doc.slug}`}
+              onClick={onNavigate}
               className={`flex items-center gap-1.5 py-1.5 px-2 text-sm rounded-md transition-colors ${
                 pathname === `/docs/${doc.slug}`
                   ? 'bg-primary/10 text-primary font-medium'
